@@ -1,0 +1,34 @@
+### Objetivos Gerais da Avaliação
+1. Qual é o principal objetivo da avaliação dos docentes para a instituição?
+2. A avaliação do docente está mais voltada para fins pedagógicos, administrativos ou ambos?
+3. Que tipo de decisões são tomadas com base nos resultados dessas avaliações?
+
+### Dores e Problemas Atuais
+4. Quais são as principais dificuldades enfrentadas hoje no processo de avaliação dos docentes?
+5. A instituição já possui algum sistema (manual ou digital) de avaliação docente? Se sim, o que não está funcionando bem nele?
+6. Há resistência dos professores ou alunos em participar da avaliação? Por quê?
+7. Os resultados das avaliações têm impacto real na prática docente? Como?
+
+### Usuários do Sistema
+8. Quem deve participar da avaliação? Apenas alunos ou também coordenação, pares e autoavaliação?
+9. Como os alunos acessam ou acessariam o sistema? Existe algum canal preferido (app, web, Moodle, etc.)?
+10. Quem deve ter acesso aos resultados das avaliações? O professor avaliado? A coordenação? Os alunos?
+
+### Métricas e Indicadores
+11. Quais critérios ou indicadores são considerados importantes para avaliar o desempenho docente? (ex: pontualidade, didática, uso de tecnologias, empatia, domínio do conteúdo)
+12. A avaliação deve ser quantitativa, qualitativa ou híbrida?
+13. A instituição deseja um ranking, uma nota final ou um relatório mais descritivo?
+
+### Frequência e Processos
+14. Com que frequência a avaliação deve ser aplicada? (Por semestre, por disciplina, anualmente?)
+15. Como é feita a coleta e análise dos dados atualmente?
+16. Existe um processo de feedback após a avaliação? Como ele funciona?
+
+### Privacidade e Ética
+17. Como a instituição lida com a confidencialidade das avaliações? Isso é uma preocupação?
+18. Os docentes têm direito de resposta ou contestação ao que foi avaliado?
+
+### Funcionalidades Desejadas no Sistema
+19. Quais funcionalidades você imagina como essenciais em um sistema ideal de avaliação docente?
+20. Há alguma integração necessária com outros sistemas já utilizados pela instituição?
+
