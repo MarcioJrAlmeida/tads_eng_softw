@@ -17,3 +17,9 @@ Esse formato de changelog é baseado no [Keep a Changelog](https://keepachangelo
     - /documents
 ### Added
 - Adição na pasta */documents*, com Cronograma, Modelo de Proposta e questão levantadas ao Dono do Produto.
+
+## [1.0.2] - 2025-04-27
+### Added
+- Adição na pasta */documents*
+    Aprimoramento os Requisitos.docx
+    Passo a Passo Requisitos.docx
