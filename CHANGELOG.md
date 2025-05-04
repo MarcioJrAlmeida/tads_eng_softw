@@ -23,3 +23,12 @@ Esse formato de changelog é baseado no [Keep a Changelog](https://keepachangelo
 - Adição na pasta */documents*
     Aprimoramento os Requisitos.docx
     Passo a Passo Requisitos.docx
+
+## [1.0.3] - 2025-05-02
+### Changed
+- Adição na pasta */documents*
+    Levantamento de Requisitos.docx
+### Added
+- Adição na pasta */banco*
+    *./modelos*
+        modelo_ER.png, primeira versão do Modelo Entidade Relacionamento
