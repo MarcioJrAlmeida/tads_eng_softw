@@ -3,6 +3,11 @@
 Todas as mudanças notáveis à esse repositório devem ser documentadas nesse arquivo.
 Esse formato de changelog é baseado no [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [1.0.5] - 2025-05-25
+### Changed
+    - Alteração no README
+       - Adição de descrição na pasta Documentos
+
 ## [1.0.4] - 2025-05-23
 ### Changed
     - Alteração na pasta */documents*
