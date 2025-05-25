@@ -11,6 +11,8 @@ O repositório está organizado por áreas de responsabilidade, com a seguinte e
 
 - /back – Responsável pela lógica de negócio e API do sistema (Backend).
 
+- /documents – Pasta com documentos de apresentação e cronograma.
+
 - /banco – Scripts e modelagem do banco de dados relacional ou não relacional.
 
 (Outras pastas podem ser criadas conforme o crescimento do projeto: /docs, /tests, /infra, etc.)
