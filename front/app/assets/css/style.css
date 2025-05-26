@@ -1,0 +1,35 @@
+/* Estilo dos botões do sidebar */
+.stButton > button {
+    width: 100%;
+    border-radius: 8px;
+    background-color: #08bebe;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    margin-bottom: 8px;
+    transition: 0.3s;
+}
+
+.stButton > button:hover {
+    background-color: #00b3b3;
+    transform: scale(1.02);
+}
+
+/* Sidebar personalizado */
+div[data-testid="stSidebar"] {
+    background-color: #f9f9f9;
+    border-right: 2px solid #e0e0e0;
+}
+
+/* Títulos */
+h1 {
+    color: #008080;
+}
+
+h2 {
+    color: #008080;
+}
+
+h3 {
+    color: #00b3b3;
+}
