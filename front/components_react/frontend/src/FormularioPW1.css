@@ -1,0 +1,55 @@
+.container-formulario {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px;
+}
+
+.barra-progresso {
+  background-color: #e0e0e0;
+  border-radius: 10px;
+  height: 8px;
+  margin-bottom: 20px;
+}
+
+.progresso {
+  background-color: #00b3b3;
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+.card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.1);
+}
+
+.botoes {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.botoes button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background-color: #00b3b3;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.botoes button:hover {
+  background-color: #009a9a;
+}
+
+.input-comentario {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  resize: none;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
