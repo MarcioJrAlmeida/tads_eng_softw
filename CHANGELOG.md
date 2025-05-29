@@ -3,6 +3,12 @@
 Todas as mudanças notáveis à esse repositório devem ser documentadas nesse arquivo.
 Esse formato de changelog é baseado no [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [1.0.7] - 2025-05-29
+### Changed
+    - Alteração na pasta */banco*
+        - Alteração para o modelo Conceitual, pós conversa com Cliente e o Professor de Banco de Dados
+        - Adição do modelo Lógico
+
 ## [1.0.6] - 2025-05-26
 ### Added
     - Adição de Pastas hierarquicas e arquivos de configuração para o Frontend
