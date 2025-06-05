@@ -3,6 +3,12 @@
 Todas as mudanças notáveis à esse repositório devem ser documentadas nesse arquivo.
 Esse formato de changelog é baseado no [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [1.0.9] - 2025-06-05
+### Added
+    - Adição na pasta */banco*
+        - Criação da pasta */ddl*, com o arquivo "create_table.sql"
+        - Criação da pasta */dml*, com os arquivos "insert_table.sql" (Dados Ficticios) e "select_table.sql"
+
 ## [1.0.8] - 2025-06-04
 ### Changed
     - Alteração na pasta */banco*
