@@ -3,6 +3,10 @@
 Todas as mudanças notáveis à esse repositório devem ser documentadas nesse arquivo.
 Esse formato de changelog é baseado no [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [1.1.0] - 2025-06-13
+### Added
+    - Adição da página "forms.py" em pages
+    
 ## [1.0.9] - 2025-06-05
 ### Added
     - Adição na pasta */banco*
