@@ -65,7 +65,6 @@ perguntas_fechadas = st.session_state.get("perguntas_fechadas_salvas", perguntas
 perguntas_abertas = st.session_state.get("perguntas_abertas_salvas", perguntas_abertas_default)
 
 # Informações iniciais
-nome = st.text_input("Seu nome:")
 professor = st.selectbox("Professor avaliado:", ["--Selecione--","Brunno", "Viviane", "Diego", "Geraldo", "Juarez", "Josino", "Emanuel"])
 
 opcoes = ["", "Nunca", "Às vezes", "Frequentemente", "Sempre"]
