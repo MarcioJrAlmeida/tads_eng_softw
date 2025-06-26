@@ -30,8 +30,7 @@ if st.sidebar.button("🏠 Página Inicial"):
     st.switch_page("pages/home.py")
     
 if st.sidebar.button("📝 Edição Formularios"):
-    st.rerun()
-    # st.switch_page("pages/edicao_forms.py")
+    st.switch_page("pages/forms.py")
 
 if st.sidebar.button("📊 Dashboard"):
     st.rerun()  # Recarrega a própria
