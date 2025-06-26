@@ -5,7 +5,7 @@ GO
 -- TABELAS
 
 CREATE TABLE Aluno (
-    matricula INT PRIMARY KEY,
+    matricula VARCHAR(30) PRIMARY KEY,
     email VARCHAR(100),
     data_hr_registro DATETIME
 );
@@ -73,8 +73,19 @@ CREATE TABLE Disciplina_Curso (
 CREATE TABLE Turma (
     id_turma INT PRIMARY KEY,
     data_hr_registro DATETIME,
-    idAluno INT
+    idCurso INT,
+    FOREIGN KEY (idCurso) REFERENCES Curso(id_curso)
 );
+
+CREATE TABLE Turma_Aluno (
+    id_turma INT,
+    idAluno VARCHAR(30),
+    data_hr_registro DATETIME,
+    PRIMARY KEY (id_turma, idAluno),
+    FOREIGN KEY (id_turma) REFERENCES Turma(id_turma),
+    FOREIGN KEY (idAluno) REFERENCES Aluno(matricula)
+);
+
 
 CREATE TABLE Contem (
     id_avaliacao INT,
@@ -110,9 +121,6 @@ ADD FOREIGN KEY (idAvaliacao) REFERENCES Avaliacao(id_avaliacao);
 
 ALTER TABLE Disciplina_Curso
 ADD FOREIGN KEY (idCurso) REFERENCES Curso(id_curso);
-
-ALTER TABLE Turma
-ADD FOREIGN KEY (idAluno) REFERENCES Aluno(matricula);
 
 ALTER TABLE Contem
 ADD FOREIGN KEY (id_avaliacao) REFERENCES Avaliacao(id_avaliacao);
