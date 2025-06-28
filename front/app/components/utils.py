@@ -8,8 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 config = load_auth_config()
 
 PERFIS = {
-    "Diretor": ["diretor"],
-    "Coordenador": ["coordenador"]
+    "Diretor": ["diretor"]
 }
 
 def autenticar_usuario(authenticator):    
@@ -35,8 +34,6 @@ def autenticar_usuario(authenticator):
                 st.session_state["authentication_status"] = True
 
                 if perfil_selecionado == "Diretor":
-                    st.switch_page("pages/home.py")
-                elif perfil_selecionado == "Coordenador":
                     st.switch_page("pages/home.py")
                 st.stop()
 

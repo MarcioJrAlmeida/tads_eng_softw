@@ -6,12 +6,6 @@ credentials:
       email: tbac@discente.ifpe.edu.br
       role: Diretor
 
-    coordenador:
-      name: Coordenador
-      password: "$2b$12$kOqELYgzMS3AvAbmZt3TKe0dQNv5V1ZeJRl41W35wZtgK3o6OJfNy" # senha: coordenador123
-      email: tbac@discente.ifpe.edu.br
-      role: Coordenador
-
 cookie:
   name: auth_cookie
   key: assinatura_secreta

@@ -5,6 +5,7 @@ import subprocess
 from pathlib import Path
 import shutil
 
+
 # Caminho raiz do projeto
 root_dir = Path(__file__).resolve().parent
 
