@@ -32,7 +32,7 @@ if st.sidebar.button("🏠 Página Inicial"):
 # ✅ Mostrar Edição Formularios apenas para Diretor
 if perfil == "Diretor":
     if st.sidebar.button("📝 Edição Formularios"):
-        st.switch_page("pages/forms.py")
+        st.switch_page("pages/edicao_forms.py")
 
 if st.sidebar.button("📊 Dashboard"):
     st.switch_page("pages/dashboard_diretor.py")

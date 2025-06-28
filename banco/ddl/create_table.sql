@@ -47,8 +47,10 @@ CREATE TABLE Avaliacao (
     id_avaliacao INT PRIMARY KEY,
     periodo INT,
     data_hr_registro DATETIME,
-    idDiretor INT
+    idDiretor INT,
+    modelo_avaliacao NVARCHAR(MAX) -- Novo campo para armazenar JSON com configuração
 );
+
 
 CREATE TABLE Pergunta (
     id_pergunta INT PRIMARY KEY,

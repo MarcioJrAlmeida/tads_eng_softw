@@ -1,0 +1,8 @@
+﻿id_disciplina;nome_disciplina;data_hr_registro;idDisciplina_Docente;idDisciplina_Curso
+1;Banco de Dados I;2025-06-21 17:30:19.297;1;1
+2;Programação Web 2;2025-06-21 17:30:19.297;2;1
+3;Engenharia de Software;2025-06-21 17:30:19.297;3;1
+4;Estruturas de Dados;2025-06-21 17:30:19.297;4;1
+5;Matematica Discreta;2025-06-21 17:30:19.297;5;1
+6;Inglês II;2025-06-21 17:30:19.297;6;1
+7;Redes de Computadores;2025-06-21 17:30:19.297;7;1

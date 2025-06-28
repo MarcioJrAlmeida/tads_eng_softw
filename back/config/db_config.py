@@ -1,5 +1,7 @@
 # back/config/db_config.py
 
+MODO_DESENVOLVIMENTO = "CSV"  # ou "BD"
+
 db_params = {
     "server": "localhost\\SQLEXPRESS",
     "database": "ifpe_sado",
