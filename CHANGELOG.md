@@ -3,10 +3,41 @@
 Todas as mudanças notáveis à esse repositório devem ser documentadas nesse arquivo.
 Esse formato de changelog é baseado no [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [1.1.1] - 2025-06-28
+### Added
+    - Criação de pasta no diretório */banco*
+        - Pasta */data/
+            - Contém todas as Tabelas em formato CSV, para que seja possível a consulta dos dados de modo Offline.
+### Changed
+    - Alteração na pasta */front/app/api*
+        - Adição de novas funções de salvar, atualizar, e exclui perguntas no *perguntas_service.py*
+        - Adição de novas funções de obter modelo avaliacao e listar avaliacoes no *avaliacao_service.py*
+    - Alteração na pasta */front*
+        - Alteração no código *forms.py*.
+        - Desenvolvimento do código *edicao_forms.py*.
+        - Alterado o caminho no botão "Editar Formularios" nas páginas, para *edicao_forms.py*.
+        - Alterado em todos os códigos o Modo de consulta aos dados, agora é verificado se está no Modo BD ou CSV.
+    - Atualizado arquivo *requirements.txt*
+        - Biblioteca Flask instalada no projeto.
+
 ## [1.1.0] - 2025-06-26
 ### Added
-    - Adição de pastas de conexão do BackEnd
-    - Primeira parte do BackEnd feita.
+    - Adição na pasta */back*
+        - Pasta */config*
+            - Com a configuração de Modo Desenvolvimento e dados do Banco de Dados.
+        - Pasta */database*
+            - Com arquivos de criação de Conexão com o Banco de Dados.
+            - Arquivo com queries rapidas.
+        - Pasta */services*
+            - Com arquivo com teste de consulta ao Banco de Dados.
+### Changed
+    - Alteração na pasta */front*
+        - Criação do arquivo de execução do *backend_app.py*
+        - Alteração no código *forms.py*, para que seja possível consultar o Banco com as rotas de API.
+    - Alteração na pasta */front/app*
+        - Desenvolvimento das Rotas de API
+            - *configuracao_service.py*
+            - *perguntas_service.py*
 
 ## [1.1.0] - 2025-06-13
 ### Added
