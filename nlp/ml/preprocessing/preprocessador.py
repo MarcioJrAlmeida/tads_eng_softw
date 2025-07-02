@@ -19,7 +19,7 @@ def limpar_texto(texto):
 
 def carregar_dados_treinamento():
     try:
-        url = "http://localhost:5001/api/ml/treinamento_manual"
+        url = "http://localhost:5001/api/ml/treinamento/manual"
         response = requests.get(url)
 
         if response.status_code != 200:

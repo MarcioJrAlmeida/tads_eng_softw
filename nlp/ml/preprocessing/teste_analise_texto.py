@@ -7,7 +7,7 @@ import os
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
 sys.path.insert(0, ROOT_DIR)
 
-from nlp.ml.validadores.analise_texto import analisar_texto
+from nlp.ml.validadores.analise_texto_hibrido import analisar_texto_hibrido
 
 # Pergunta fixa (mas personalizável)
 pergunta = "Como você avalia o desempenho do professor durante o semestre?"
@@ -19,13 +19,16 @@ print(f"❓ Pergunta: {pergunta}")
 resposta = input("✏️  Digite a resposta do aluno: ").strip()
 
 # Análise
-resultado = analisar_texto(resposta, contexto=pergunta)
+resultado = analisar_texto_hibrido(resposta, pergunta=pergunta)
 
-print("\n✅ Resultado da Análise Estruturada:")
-for r in resultado:
-    print(f"- Método: {r['metodo_detectado']}")
-    print(f"  → Ofensiva: {r['eh_ofensiva']}")
-    print(f"  → Tipo de Suspeita: {r['tipo_suspeita']}")
-    print(f"  → Score: {r['score']}")
-    print(f"  → Sentimento: {r['sentimento_previsto']}")
-    print("-" * 40)
+if isinstance(resultado, list) and all(isinstance(r, dict) for r in resultado):
+    print("✅ Resultado da Análise Estruturada:")
+    for r in resultado:
+        print(f"- Método: {r['metodo_detectado']}")
+        print(f"  → Ofensiva: {r['eh_ofensiva']}")
+        print(f"  → Tipo de Suspeita: {r['tipo_suspeita']}")
+        print(f"  → Score: {r['score']}")
+        print(f"  → Sentimento: {r['sentimento_previsto']}")
+        print("-" * 40)
+else:
+    print("❌ Resultado inválido:", repr(resultado))
