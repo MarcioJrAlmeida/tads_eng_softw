@@ -17,12 +17,12 @@ API_KEY = os.getenv("OPENROUTER_API_KEY")
 def analisar_texto_llm(resposta, pergunta):
     # Primeiro, tenta modelo local supervisionado
     resultado_ml = prever_ofensividade(pergunta, resposta)
-    if resultado_ml["score"] >= 0.75:
+    if resultado_ml.get("score",0) >= 0.5:
         return [{
-            "eh_ofensiva": resultado_ml["eh_ofensiva"],
+            "eh_ofensiva": resultado_ml.get("eh_ofensiva",0),
             "metodo_detectado": "modelo_treinado_manual",
             "tipo_suspeita": "machine_learning_supervisionado",
-            "score": resultado_ml["score"],
+            "score": resultado_ml.get("score",0),
             "sentimento_previsto": None
         }]
         
@@ -41,12 +41,12 @@ Com base na análise contextual da pergunta e da resposta, execute as seguintes 
 2. Classifique o sentimento da resposta como: **positivo**, **neutro** ou **negativo**.
 3. Caso haja ofensa, identifique claramente o **motivo** (ex: linguagem agressiva, desrespeito, ironia ofensiva, etc.).
 4. Atribua um **score de suspeita** entre 0 (nenhuma suspeita) e 1 (altamente suspeita).
-5. Use o nome do modelo "Mistral-7B-Instruct:free" no campo `metodo_detectado`.
+5. Use o nome do modelo "GPT 3.5 Turbo" no campo `metodo_detectado`.
 
 Responda exclusivamente no formato JSON a seguir:
 [
   {{
-    "metodo_detectado": "Mistral‑7B‑Instruct:free",
+    "metodo_detectado": "GPT 3.5 Turbo",
     "eh_ofensiva": true,
     "tipo_suspeita": "Linguagem agressiva",
     "score": 0.82,
@@ -63,7 +63,7 @@ Responda exclusivamente no formato JSON a seguir:
         }
 
         payload = {
-            "model": "mistralai/mistral-7b-instruct",
+            "model": "openai/gpt-3.5-turbo-0613",
             "messages": [
                 {"role": "user", "content": prompt}
             ]

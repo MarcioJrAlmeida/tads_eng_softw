@@ -9,17 +9,14 @@ sys.path.insert(0, ROOT_DIR)
 
 from nlp.ml.validadores.analise_texto_hibrido import analisar_texto_hibrido
 
-# Pergunta fixa (mas personalizável)
 pergunta = "Como você avalia o desempenho do professor durante o semestre?"
 
 print("🔍 Avaliação de Resposta Aberta")
 print(f"❓ Pergunta: {pergunta}")
 
-# Entrada do usuário
 resposta = input("✏️  Digite a resposta do aluno: ").strip()
 
-# Análise
-resultado = analisar_texto_hibrido(resposta, pergunta=pergunta)
+resultado = analisar_texto_hibrido(resposta, pergunta)
 
 if isinstance(resultado, list) and all(isinstance(r, dict) for r in resultado):
     print("✅ Resultado da Análise Estruturada:")
