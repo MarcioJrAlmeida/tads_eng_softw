@@ -28,32 +28,34 @@ def analisar_texto_llm(resposta, pergunta):
         
     try:
         prompt = f"""
-Você é um modelo de linguagem treinado para classificar textos com base no conteúdo e no contexto de perguntas e respostas em um formulário de avaliação.
+        Você é um modelo de linguagem treinado para analisar respostas de formulários de avaliação. Sua tarefa é interpretar o conteúdo da resposta em relação ao contexto da pergunta e retornar uma análise objetiva.
 
-Analise cuidadosamente o seguinte diálogo:
+        ### Dados:
+        - Contexto da pergunta: "{pergunta}"
+        - Resposta do usuário: "{resposta}"
 
-Contexto da pergunta: "{pergunta}"
-Resposta do usuário: "{resposta}"
+        ### Objetivos da análise:
+        1. Avaliar se a resposta contém **conteúdo ofensivo**. (true/false)
+        2. Determinar o **sentimento geral** da resposta: "positivo", "neutro", "negativo" ou irônico.
+        3. Se houver ofensa, especifique o **tipo de suspeita** ou o motivo (ex: "linguagem agressiva", "ironia ofensiva", "desrespeito").
+        4. Atribuir um **score de suspeita** entre 0 e 1, onde:
+           - 0.0 = nenhuma suspeita
+           - 1.0 = extremamente ofensiva ou suspeita
+        5. Registrar o nome do modelo como `"GPT 3.5 Turbo"` no campo `metodo_detectado`.
 
-Com base na análise contextual da pergunta e da resposta, execute as seguintes tarefas:
+        ### Formato de resposta:
+        Responda SOMENTE com um JSON válido. Os valores devem ser baseados na sua análise, não copie os exemplos. Exemplo de estrutura (não copie os valores):
 
-1. Detecte se há presença de conteúdo ofensivo.
-2. Classifique o sentimento da resposta como: **positivo**, **neutro** ou **negativo**.
-3. Caso haja ofensa, identifique claramente o **motivo** (ex: linguagem agressiva, desrespeito, ironia ofensiva, etc.).
-4. Atribua um **score de suspeita** entre 0 (nenhuma suspeita) e 1 (altamente suspeita).
-5. Use o nome do modelo "GPT 3.5 Turbo" no campo `metodo_detectado`.
-
-Responda exclusivamente no formato JSON a seguir:
-[
-  {{
-    "metodo_detectado": "GPT 3.5 Turbo",
-    "eh_ofensiva": true,
-    "tipo_suspeita": "Linguagem agressiva",
-    "score": 0.82,
-    "sentimento_previsto": "negativo"
-  }}
-]
-"""
+        [
+          {{
+            "metodo_detectado": "GPT 3.5 Turbo",
+            "eh_ofensiva": false,
+            "tipo_suspeita": null,
+            "score": 0.15,
+            "sentimento_previsto": "neutro"
+          }}
+        ]
+        """
 
         headers = {
             "Authorization": f"Bearer {API_KEY}",
