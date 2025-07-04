@@ -102,7 +102,7 @@ def analisar_texto(texto, contexto=None):
                 "eh_ofensiva": True,
                 "metodo_detectado": "palavra_ofensiva",
                 "tipo_suspeita": "ofensa_explicita",
-                "score": 1.0,
+                "score_ofensa_explicita": 1.0,
                 "sentimento_previsto": resultado_sent["label"]
             }]
 
@@ -114,7 +114,7 @@ def analisar_texto(texto, contexto=None):
                 "eh_ofensiva": resultado_ofensivo["eh_ofensiva"],
                 "metodo_detectado": "modelo_treinado_ofensivo",
                 "tipo_suspeita": "ofensividade_supervisionada",
-                "score": resultado_ofensivo.get("score", 0),
+                "score_ofensivo": resultado_ofensivo.get("score", 0),
                 "sentimento_previsto": None
             }]
 
@@ -126,44 +126,50 @@ def analisar_texto(texto, contexto=None):
             "eh_ofensiva": False,
             "metodo_detectado": "semantica",
             "tipo_suspeita": "critica_aceitavel",
-            "score": 0,
+            "score_semantica": 1.0,
             "sentimento_previsto": "negativo"
         }]
 
     # (3) Modelo de toxicidade
     tox = tox_pipeline(original)[0]
-    if tox['label'].lower() == "toxic" and tox['score'] >= 0.7:
+    if tox['label'].lower() == "toxic" and tox['score'] >= 0.75:
         resultado_sent = sentiment_pipeline(original)[0]
         return [{
             "eh_ofensiva": True,
             "metodo_detectado": "modelo_transformer",
             "tipo_suspeita": "toxicidade_modelo",
-            "score": tox['score'],
+            "score_toxidade": tox['score'],
             "sentimento_previsto": resultado_sent['label']
         }]
 
     # (4) Modelo supervisionado de ANÁLISE CRÍTICA (sentimento inteligente)
     if contexto:
         resultado_critico = prever_analise_critica(contexto, texto)
-        return [{
-            "eh_ofensiva": False,
-            "metodo_detectado": "modelo_treinado_critico",
-            "tipo_suspeita": "avaliacao_critica_inteligente",
-            "score": resultado_critico.get("score_critica", 0),
-            "sentimento_previsto": resultado_critico.get("classificacao_critica", 0)
-        }]
+        if resultado_critico.get("score_critica", 0) >= 0.5:
+            return [{
+                "eh_ofensiva": False,
+                "metodo_detectado": "modelo_treinado_critico",
+                "tipo_suspeita": "avaliacao_critica_inteligente",
+                "score_critica": resultado_critico.get("score_critica", 0),
+                "sentimento_previsto": resultado_critico.get("classificacao_critica", 0)
+            }]
 
     # (5) Fallback: Modelo de sentimento geral
     resultado_sent = sentiment_pipeline(original)[0]
+    label_map = {
+    "LABEL_0": "negativo",
+    "LABEL_1": "neutro",
+    "LABEL_2": "positivo"
+    }
     return [{
         "eh_ofensiva": False,
         "metodo_detectado": "sentimento",
         "tipo_suspeita": "avaliacao_geral",
-        "score": round(resultado_sent['score'], 2),
-        "sentimento_previsto": resultado_sent['label']
+        "score_ml_sentimento": round(resultado_sent['score'], 2),
+        "sentimento_previsto": label_map[resultado_sent['label']]
     }]
 
 # Teste direto
 if __name__ == "__main__":
-    resultado = analisar_texto("Você gosta do professor?", "Acho ele um idiota.")
+    resultado = analisar_texto("Como você avalia o desempenho do professor durante o semestre?", "O professor atuou como um simples acadêmico, toda vez que tinha pergunta que ele não sabia ele era rispido com o alluno que perguntou.")
     print("Resultado estruturado:", resultado)

@@ -13,14 +13,25 @@ def analisar_texto_hibrido(resposta: str, pergunta: str):
     Se a classificação for inconclusiva ou pouco confiável,
     aciona a IA (LLM) para uma interpretação mais precisa.
     """
+    # Caso o modelo local classifique como ofensivo com alta confiança, usa ele
     resultado_local = analisar_texto(resposta, pergunta)
     r_local = resultado_local[0]
 
-    # Caso o modelo local classifique como ofensivo com alta confiança, usa ele
-    if r_local["eh_ofensiva"] and r_local["score"] >= 0.85:
-        return resultado_local
+    # Verifica qual tipo de score está presente
+    score = (
+        r_local.get("score_critica") or 
+        r_local.get("score_ofensivo") or 
+        r_local.get("score_ofensa_explicita") or
+        r_local.get("score_semantica") or
+        r_local.get("score_toxidade") or
+        r_local.get("score_ml_sentimento") or
+        0
+    )
 
-    # Executa a IA apenas se for necessário
+    # Se ambos tiverem alta confiança, retorna o local
+    if score >= 0.65:
+        return resultado_local
+    
     resultado_ia = analisar_texto_llm(resposta, pergunta)
 
     # Garante que a resposta da IA seja válida (lista com dicionário)
