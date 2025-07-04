@@ -10,12 +10,15 @@ sys.path.insert(0, str(root_dir))
 from app.api.perguntas_service import pergunta_api
 from app.api.configuracao_service import configuracao_api 
 from app.api.avaliacao_service import modelo_avaliacao_api, avaliacoes_api
+from nlp.ml.interface.ml_service import ml_api
+
 
 app = Flask(__name__)
 app.register_blueprint(pergunta_api, url_prefix="/api")
 app.register_blueprint(configuracao_api, url_prefix="/api") 
 app.register_blueprint(modelo_avaliacao_api, url_prefix='/api')
 app.register_blueprint(avaliacoes_api, url_prefix='/api')
+app.register_blueprint(ml_api, url_prefix='/ml')
 
 
 if __name__ == '__main__':
