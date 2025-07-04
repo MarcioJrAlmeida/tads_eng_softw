@@ -62,10 +62,12 @@ Para testar o sistema localmente:
    ```bash
    python ml/learning/treinar_ofensivo.py
    python ml/learning/treinar_analise.py
+   ```
 
 2. Faça um teste manual de avaliação:
   ```bash
   python ml/preprocessing/teste_analise_texto.py
+  ```
 
 ## 🗃️ Banco de Dados
 - Utilizamos SQL Server com uma tabela central chamada Treinamento_Manual para alimentar os modelos.

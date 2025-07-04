@@ -98,7 +98,7 @@ def salvar_analise():
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
 
-@ml_api.route('/treinamento/manual', methods=['GET'])
+@ml_api.route('/treinamento/ofensividade', methods=['GET'])
 def obter_treinamento_manual():
     try:
         conn = get_connection_ml()
@@ -115,7 +115,7 @@ def obter_treinamento_manual():
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
     
-@ml_api.route('/treinamento_manual', methods=['POST'])
+@ml_api.route('/treinamento/ofensividade', methods=['POST'])
 def inserir_treinamento_manual():
     try:
         dados = request.json
@@ -133,6 +133,49 @@ def inserir_treinamento_manual():
             dados['contexto_pergunta'],
             dados['conteudo_resposta'],
             dados['classificada_como_ofensiva'],
+            dados['classificada_como_sentimento'],
+            dados.get('observacao', '')
+        ))
+
+        conn.commit()
+        conn.close()
+        return jsonify({"mensagem": "Treinamento inserido com sucesso"}), 201
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+    
+@ml_api.route('/treinamento/sentimento', methods=['GET'])
+def obter_treinamento_sentimento():
+    try:
+        conn = get_connection_ml()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, contexto_pergunta, conteudo_resposta,
+            classificada_como_sentimento, observacao
+            FROM Treinamento_Sentimento
+        """)
+        colunas = [column[0] for column in cursor.description]
+        resultados = [dict(zip(colunas, row)) for row in cursor.fetchall()]
+        conn.close()
+        return jsonify(resultados), 200
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+    
+@ml_api.route('/treinamento/sentimento', methods=['POST'])
+def inserir_treinamento_sentimento():
+    try:
+        dados = request.json
+        conn = get_connection_ml()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO Treinamento_Sentimento (
+                contexto_pergunta, conteudo_resposta,
+                classificada_como_sentimento,
+                observacao
+            ) VALUES (?, ?, ?, ?, ?)
+        """, (
+            dados['contexto_pergunta'],
+            dados['conteudo_resposta'],
             dados['classificada_como_sentimento'],
             dados.get('observacao', '')
         ))
