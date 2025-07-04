@@ -11,7 +11,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
 
-API_URL = "http://localhost:5001/ml/treinamento/manual"
+API_URL = "http://localhost:5001/ml/treinamento/ofensividade"
 
 def limpar_texto(texto):
     if not isinstance(texto, str):
@@ -44,7 +44,7 @@ def treinar_modelo_ofensivo():
     X = df['texto']
     y = df['label']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
     vectorizer = TfidfVectorizer(max_features=3000)
     X_train_vec = vectorizer.fit_transform(X_train)

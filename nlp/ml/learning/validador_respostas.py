@@ -43,21 +43,17 @@ def prever_ofensividade(contexto_pergunta, conteudo_resposta, threshold=0.5):
     }
 
 
-def prever_analise_critica(contexto_pergunta, conteudo_resposta, threshold=0.5):
+def prever_analise_critica(contexto_pergunta, conteudo_resposta):
     texto_completo = f"{contexto_pergunta} {conteudo_resposta}"
     texto_limpo = limpar_texto(texto_completo)
 
     X = vectorizer_analitico.transform([texto_limpo])
     previsao = modelo_analitico.predict(X)[0]
     probabilidade = modelo_analitico.predict_proba(X)[0].max()
-    
-    if probabilidade < threshold:
-        sentimento = 'neutro'  
-    else:
-        sentimento = previsao  
 
     return {
-        "classificacao_critica": sentimento,
+        "eh_ofensiva": False,
+        "classificacao_critica": previsao,
         "score_critica": round(float(probabilidade), 3)
     }
 
