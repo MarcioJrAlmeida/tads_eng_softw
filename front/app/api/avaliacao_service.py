@@ -90,3 +90,58 @@ def listar_avaliacoes():
 
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
+
+@avaliacoes_api.route('/avaliacoes', methods=['POST'])
+def criar_avaliacao():
+    try:
+        dados = request.json
+        data_hr = datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
+
+        # Validação básica dos campos
+        campos_obrigatorios = ['id_avaliacao', 'periodo', 'data_hr_registro', 'idDiretor', 'modelo_avaliacao']
+        for campo in campos_obrigatorios:
+            if campo not in dados:
+                return jsonify({"erro": f"Campo '{campo}' é obrigatório."}), 400
+
+        if MODO_DESENVOLVIMENTO == "CSV":
+            caminho = get_csv_path("Avaliacao.csv")
+            
+            # Verifica se o arquivo já existe para carregar
+            if os.path.exists(caminho):
+                df = pd.read_csv(caminho, sep=';', dtype=str)
+            else:
+                df = pd.DataFrame(columns=campos_obrigatorios)
+
+            nova_linha = {
+                'id_avaliacao': int(dados['id_avaliacao']),
+                'periodo': int(dados['periodo']),
+                'data_hr_registro': data_hr,
+                'idDiretor': int(dados['idDiretor']),
+                'modelo_avaliacao': json.dumps(dados['modelo_avaliacao'])
+            }
+
+            df = pd.concat([df, pd.DataFrame([nova_linha])], ignore_index=True)
+            df.to_csv(caminho, sep=';', index=False)
+
+            return jsonify({"mensagem": "Avaliação criada com sucesso (CSV)."}), 201
+
+        else:
+            conn = get_connection()
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                INSERT INTO Avaliacao (id_avaliacao, periodo, data_hr_registro, idDiretor, modelo_avaliacao)
+                VALUES (?, ?, ?, ?, ?)
+            """, (
+                dados['id_avaliacao'],
+                dados['periodo'],
+                datetime.now(),
+                dados['idDiretor'],
+                json.dumps(dados['modelo_avaliacao'])
+            ))
+
+            conn.commit()
+            return jsonify({"mensagem": "Avaliação criada com sucesso (BD)."}), 201
+
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
