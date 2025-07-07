@@ -95,29 +95,34 @@ def listar_avaliacoes():
 def criar_avaliacao():
     try:
         dados = request.json
-        data_hr = datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
+        data_hr = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Validação básica dos campos
-        campos_obrigatorios = ['id_avaliacao', 'periodo', 'data_hr_registro', 'idDiretor', 'modelo_avaliacao']
-        for campo in campos_obrigatorios:
-            if campo not in dados:
-                return jsonify({"erro": f"Campo '{campo}' é obrigatório."}), 400
+        # Validar campos obrigatórios (exceto id, data e diretor)
+        if 'periodo' not in dados or 'modelo_avaliacao' not in dados:
+            return jsonify({"erro": "Campos 'periodo' e 'modelo_avaliacao' são obrigatórios."}), 400
+
+        periodo = int(dados['periodo'])
+        modelo_avaliacao = dados['modelo_avaliacao']
+        idDiretor = 1  # fixo por enquanto
 
         if MODO_DESENVOLVIMENTO == "CSV":
             caminho = get_csv_path("Avaliacao.csv")
-            
-            # Verifica se o arquivo já existe para carregar
+
             if os.path.exists(caminho):
                 df = pd.read_csv(caminho, sep=';', dtype=str)
+                max_id = df["id_avaliacao"].astype(int).max() if not df.empty else 0
             else:
-                df = pd.DataFrame(columns=campos_obrigatorios)
+                df = pd.DataFrame(columns=["id_avaliacao", "periodo", "data_hr_registro", "idDiretor", "modelo_avaliacao"])
+                max_id = 0
+
+            novo_id = max_id + 1
 
             nova_linha = {
-                'id_avaliacao': int(dados['id_avaliacao']),
-                'periodo': int(dados['periodo']),
+                'id_avaliacao': str(novo_id),
+                'periodo': str(periodo),
                 'data_hr_registro': data_hr,
-                'idDiretor': int(dados['idDiretor']),
-                'modelo_avaliacao': json.dumps(dados['modelo_avaliacao'])
+                'idDiretor': str(idDiretor),
+                'modelo_avaliacao': json.dumps(modelo_avaliacao)
             }
 
             df = pd.concat([df, pd.DataFrame([nova_linha])], ignore_index=True)
@@ -129,15 +134,19 @@ def criar_avaliacao():
             conn = get_connection()
             cursor = conn.cursor()
 
+            cursor.execute("SELECT ISNULL(MAX(id_avaliacao), 0) FROM Avaliacao")
+            max_id = cursor.fetchone()[0]
+            novo_id = max_id + 1
+
             cursor.execute("""
                 INSERT INTO Avaliacao (id_avaliacao, periodo, data_hr_registro, idDiretor, modelo_avaliacao)
                 VALUES (?, ?, ?, ?, ?)
             """, (
-                dados['id_avaliacao'],
-                dados['periodo'],
+                novo_id,
+                periodo,
                 datetime.now(),
-                dados['idDiretor'],
-                json.dumps(dados['modelo_avaliacao'])
+                idDiretor,
+                json.dumps(modelo_avaliacao)
             ))
 
             conn.commit()
