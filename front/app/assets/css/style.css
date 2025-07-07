@@ -17,13 +17,13 @@
 
 /* Sidebar personalizado */
 div[data-testid="stSidebar"] {
-    background-color: #f9f9f9;
-    border-right: 2px solid #e0e0e0;
+    background-color: #3bb915;
+    border-right: 2px solid #ffffff;
 }
 
 /* Títulos */
 h1 {
-    color: #008080;
+    color: #6398e7;
 }
 
 h2 {

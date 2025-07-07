@@ -1,19 +1,51 @@
 import streamlit as st
 import requests
 from datetime import datetime
-
+from datetime import date
+import csv
+import os
 from app.components.auth import load_auth_config, create_authenticator
 from app.components.utils import realizar_logout, load_css, load_footer, load_js
 
 st.set_page_config(
-    page_title="Editar Formulário", 
-    page_icon="✏️", 
+    page_title="Formulário", 
+    page_icon="", 
     layout="centered"
 )
 
 # Configuração e autenticação
 config = load_auth_config()
 authenticator = create_authenticator(config)
+
+def criar_nova_avaliacao():
+    st.subheader("🆕 Criar Nova Avaliação")
+
+    periodo = st.text_input("📅 Período da Avaliação (ex: 2025.1)", key="novo_periodo")
+
+    if st.button("✅ Criar Avaliação"):
+        if not periodo.strip():
+            st.warning("⚠️ O período não pode estar vazio.")
+            return
+
+        payload = {
+            "periodo": periodo,
+            "data_hr_registro": datetime.now().isoformat()
+        }
+
+        try:
+            response = requests.post(AVALIACOES_API_URL, json=payload)
+            if response.status_code == 201:
+                nova_avaliacao = response.json()
+                st.success("✅ Avaliação criada com sucesso!")
+                st.session_state["avaliacao_selecionada"] = nova_avaliacao["id_avaliacao"]
+                st.session_state["avaliacao_info"] = nova_avaliacao
+                st.session_state["criando_avaliacao"] = False
+                st.rerun()
+            else:
+                st.error(f"Erro ao criar avaliação: {response.text}")
+        except Exception as e:
+            st.error(f"Erro de conexão: {str(e)}")
+
 
 # Estado inicial
 if "modo_edicao" not in st.session_state:
@@ -37,18 +69,17 @@ load_css("style.css")
 load_js("index.js")
 
 # Sidebar
-st.sidebar.title("≡ Menu")
-if st.sidebar.button("🏠 Página Inicial"):
+if st.sidebar.button("Home"):
     st.switch_page("pages/home.py")
-if st.sidebar.button("📝 Formulário"):
+if st.sidebar.button("Formulários"):
     st.switch_page("pages/edicao_forms.py")
-if st.sidebar.button("📊 Dashboard"):
+if st.sidebar.button("Dashboard"):
     st.switch_page("pages/dashboard_diretor.py")
-if st.sidebar.button("🚪 Logout"):
+if st.sidebar.button("Logout"):
     realizar_logout()
 
 # Conteúdo principal
-st.title("🛠️ Edição do Formulário de Avaliação")
+st.title("🛠️ Formulários de Avaliação")
 
 API_URL = "http://localhost:5001/api/perguntas"
 RESPOSTA_API_URL = "http://localhost:5001/api/respostas"
@@ -220,99 +251,47 @@ def editar_perguntas_existentes():
             elif cancelar:
                 st.session_state.pop(f"confirmar_excluir_{pergunta['id_pergunta']}", None)
 
-
-def ordenar_perguntas(perguntas):
-    st.subheader("🔃 Ordenar Perguntas")
-    ordem_perguntas = []
-    perguntas_disponiveis = perguntas.copy()
-
-    for i in range(len(perguntas)):
-        if not perguntas_disponiveis:
-            break
-
-        opcoes = {
-            f"{p['id_pergunta']} - [{p['tipo_pergunta'].capitalize()}] {p['texto_pergunta'][:60]}{'...' if len(p['texto_pergunta']) > 60 else ''}": p['id_pergunta']
-            for p in perguntas_disponiveis
-        }
-
-        label = f"Selecione a pergunta para a posição {i + 1}"
-        selected_label = st.selectbox(label, list(opcoes.keys()), key=f"ordem_{i}")
-        selected_id = opcoes[selected_label]
-
-        ordem_perguntas.append(selected_id)
-        perguntas_disponiveis = [p for p in perguntas_disponiveis if p['id_pergunta'] != selected_id]
-
-    if st.button("💾 Salvar Ordem das Perguntas"):
-        payload = {
-            "id_avaliacao": st.session_state["avaliacao_selecionada"],
-            "ordem_perguntas": ordem_perguntas,
-            "qtd_perguntas_exibir": st.session_state.get("qtd_perguntas_exibir", len(ordem_perguntas))
-        }
-        try:
-            response = requests.post("http://localhost:5001/api/configuracao_formulario", json=payload)
-            if response.status_code == 200:
-                st.success("Ordem das perguntas salva com sucesso!")
-                st.session_state['ordem_perguntas'] = ordem_perguntas
-            else:
-                st.error("Erro ao salvar a ordem.")
-        except Exception as e:
-            st.error(f"Erro: {str(e)}")
-
-def configurar_quantidade(perguntas):
-    st.subheader("🔢 Definir Quantidade de Perguntas")
-    ordem_atual = st.session_state.get("ordem_perguntas", [p['id_pergunta'] for p in perguntas])
-    max_qtd = len(ordem_atual)
-    qtd = st.slider("Quantidade de perguntas a exibir", min_value=1, max_value=max_qtd, value=st.session_state.get("qtd_perguntas_exibir", max_qtd))
-
-    if st.button("💾 Salvar Quantidade de Perguntas"):
-        payload = {
-            "id_avaliacao": st.session_state["avaliacao_selecionada"],
-            "ordem_perguntas": ordem_atual,
-            "qtd_perguntas_exibir": qtd
-        }
-        try:
-            response = requests.post("http://localhost:5001/api/configuracao_formulario", json=payload)
-            if response.status_code == 200:
-                st.success("Quantidade de perguntas salva com sucesso!")
-                st.session_state['qtd_perguntas_exibir'] = qtd
-            else:
-                st.error("Erro ao salvar a quantidade.")
-        except Exception as e:
-            st.error(f"Erro: {str(e)}")
-
             
 def menu_edicao():
     st.markdown("### ⚙️ Menu de Edição Rápida")
 
-    col1, col2 = st.columns([1, 5])
-    with col1:
-        st.write("")
+    col_voltar, col_botao1, col_botao2 = st.columns([1, 1, 1])
+
+    with col_voltar:
         if st.button("🔙 Voltar"):
             st.session_state["modo_edicao"] = False
             st.rerun()
 
-    with col2:
-        col3, col4, col5, col6 = st.columns(4)
-        with col3:
-            if st.button("🆕 Nova Pergunta"):
-                st.session_state["secao_edicao"] = "Cadastrar Nova Pergunta"
-        with col4:
-            if st.button("✏️ Editar Perguntas"):
-                st.session_state["secao_edicao"] = "Editar Perguntas Existentes"
-        with col5:
-            if st.button("🔢 Quantidade"):
-                st.session_state["secao_edicao"] = "Quantidade de Perguntas"
-        with col6:
-            if st.button("🔃 Ordenar Perguntas"):
-                st.session_state["secao_edicao"] = "Ordenar Perguntas"
+    with col_botao1:
+        if st.button("🆕 Nova Pergunta"):
+            st.session_state["secao_edicao"] = "Cadastrar Nova Pergunta"
+
+    with col_botao2:
+        if st.button("✏️ Editar Perguntas"):
+            st.session_state["secao_edicao"] = "Editar Perguntas Existentes"
+
 
 def main():
-    usuario_logado = st.session_state.get("authentication_status", False)
+    if "modo_edicao" not in st.session_state:
+        st.session_state["modo_edicao"] = False
+    if "secao_edicao" not in st.session_state:
+        st.session_state["secao_edicao"] = ""
+    if "criando_avaliacao" not in st.session_state:
+        st.session_state["criando_avaliacao"] = False
 
     if not st.session_state.get("avaliacao_selecionada"):
-        sucesso = selecionar_avaliacao()
-        if not sucesso:
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            sucesso = selecionar_avaliacao()
+        with col2:
+            if st.button("🆕 Nova Avaliação"):
+                st.session_state["criando_avaliacao"] = True
+                st.rerun()
+
+        if st.session_state.get("criando_avaliacao"):
+            criar_nova_avaliacao()
             return
+
     else:
         col1, col2 = st.columns([6, 1])
         with col1:
@@ -365,10 +344,6 @@ def main():
             cadastrar_nova_pergunta()
         elif st.session_state["secao_edicao"] == "Editar Perguntas Existentes":
             editar_perguntas_existentes()
-        elif st.session_state["secao_edicao"] == "Quantidade de Perguntas":
-            configurar_quantidade(perguntas)
-        elif st.session_state["secao_edicao"] == "Ordenar Perguntas":
-            ordenar_perguntas(perguntas)
     
 
 if __name__ == "__main__":

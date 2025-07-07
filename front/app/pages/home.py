@@ -2,8 +2,9 @@ import streamlit as st
 from app.components.auth import load_auth_config, create_authenticator
 from app.components.utils import realizar_logout, load_css, load_footer, load_js
 
+
 st.set_page_config(
-    page_title="Página Inicial",
+    page_title="SADo",
     page_icon="🏠",
     layout="centered"
 )
@@ -24,31 +25,34 @@ load_css("style.css")
 load_js("index.js")
 
 # --- Menu Lateral com Botões ---
-st.sidebar.title("≡ Menu")
 
-if st.sidebar.button("🏠 Página Inicial"):
+if st.sidebar.button("Home"):
     st.rerun()  # Recarrega a própria página inicial
     
-# ✅ Mostrar Edição Formularios apenas para Diretor
+# ✅ Mostrar Formularios apenas para Diretor
 if perfil == "Diretor":
-    if st.sidebar.button("📝 Edição Formularios"):
+    if st.sidebar.button("Formularios"):
         st.switch_page("pages/edicao_forms.py")
 
-if st.sidebar.button("📊 Dashboard"):
+if st.sidebar.button("Dashboard"):
     st.switch_page("pages/dashboard_diretor.py")
 
-if st.sidebar.button("🚪 Logout"):
+if st.sidebar.button("Logout"):
     realizar_logout()
     
 st.sidebar.markdown("---")
 st.sidebar.info("Sistema de Avaliação Docente - IFPE Jaboatão")
 
 # --- Conteúdo da Página Inicial ---
-st.title("🏠 Página Inicial")
+st.title("🏠 Home")
 st.markdown("""
 Bem-vindo ao sistema de avaliação docente desenvolvido como parte do projeto de Engenharia de Software.
-
+            
 Utilize o menu lateral para navegar entre as páginas do sistema.
+            
+O sistema permite que você avalie os docentes do IFPE Jaboatão, visualize dashboards e edite formulários de avaliação.
+            
+Para mais informações, consulte a documentação ou entre em contato com a equipe de desenvolvimento.
 """)
 
 st.success("Você está na Página Inicial!")
