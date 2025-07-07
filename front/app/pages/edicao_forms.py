@@ -48,6 +48,16 @@ if st.sidebar.button("Dashboard"):
 if st.sidebar.button("Logout"):
     realizar_logout()
 
+st.sidebar.markdown("---")
+st.sidebar.markdown(
+    """
+    <h3 style="text-align: center; color: #FFFFFF;">
+        Sistema de Avaliação Docente - IFPE Jaboatão
+    </h3>
+    """,
+    unsafe_allow_html=True
+)
+
 # Conteúdo principal
 st.title("🛠️ Formulários de Avaliação")
 
@@ -101,8 +111,16 @@ def selecionar_avaliacao():
     return False
 
 def exibir_formulario_avaliacao(perguntas, perfil):
-    st.subheader("Formulário de Avaliação Docente")
+    st.subheader("📋 Formulário de Avaliação Docente")
     respostas = []
+
+    opcoes = {
+        1: "Discordo totalmente",
+        2: "Discordo",
+        3: "Neutro",
+        4: "Concordo",
+        5: "Concordo totalmente"
+    }
 
     if 'ordem_perguntas' in st.session_state:
         perguntas_ordenadas = [p for id_ in st.session_state['ordem_perguntas'] for p in perguntas if p['id_pergunta'] == id_]
@@ -112,41 +130,51 @@ def exibir_formulario_avaliacao(perguntas, perfil):
     qtd_exibir = st.session_state.get('qtd_perguntas_exibir', len(perguntas_ordenadas))
     perguntas_exibidas = perguntas_ordenadas[:qtd_exibir]
 
-    alternativas_fechadas_padrao = [
-        "Selecione...",
-        "Discordo totalmente",
-        "Discordo",
-        "Neutro",
-        "Concordo",
-        "Concordo totalmente"
-    ]
-
     for pergunta in perguntas_exibidas:
+        texto_curto = pergunta['texto_pergunta'][:80] + ("..." if len(pergunta['texto_pergunta']) > 80 else "")
         if pergunta['tipo_pergunta'].lower() == "fechada":
-            resposta = st.radio(pergunta['texto_pergunta'], alternativas_fechadas_padrao, key=f"resposta_{pergunta['id_pergunta']}")
+            resposta = st.radio(
+                texto_curto,
+                opcoes,
+                key=f"resposta_{pergunta['id_pergunta']}",
+                horizontal=True
+            )
         else:
             resposta = st.text_area(pergunta['texto_pergunta'], key=f"resposta_{pergunta['id_pergunta']}")
 
-        respostas.append({"id_pergunta": pergunta['id_pergunta'], "resposta": resposta})
+
+        respostas.append({
+            "id_pergunta": pergunta['id_pergunta'],
+            "resposta": opcoes[resposta] if pergunta['tipo_pergunta'].lower() == "fechada" else resposta
+        })
 
     if perfil != "Diretor":
-        if st.button("Enviar respostas"):
+        if st.button("📨 Enviar respostas"):
             for r in respostas:
-                if r["resposta"] == "Selecione...":
-                    st.warning("Por favor, selecione uma resposta para todas as perguntas fechadas.")
+                if not r["resposta"] or r["resposta"] == "Selecione...":
+                    st.warning("⚠️ Por favor, responda todas as perguntas.")
                     return
 
             payload = {
                 "respostas": respostas,
                 "data_hr_registro": datetime.now().isoformat()
             }
-            response = requests.post(RESPOSTA_API_URL, json=payload)
-            if response.status_code == 201:
-                st.success("Respostas enviadas com sucesso!")
-            else:
-                st.error("Erro ao enviar respostas.")
+
+            st.write("Payload enviado:", payload)  # DEBUG
+
+            try:
+                response = requests.post("http://localhost:5001/api/respostas", json=payload)
+                if response.status_code == 201:
+                    st.success("✅ Respostas enviadas com sucesso!")
+                else:
+                    st.error(f"Erro ao enviar respostas. Status: {response.status_code}, Msg: {response.text}")
+            except Exception as e:
+                st.error(f"Erro ao enviar respostas: {e}")
     else:
         st.info("🔒 Como Diretor, você não pode enviar respostas.")
+
+
+
         
 @st.cache_data(ttl=60)
 def carregar_perguntas():
@@ -308,17 +336,11 @@ def criar_nova_avaliacao():
             st.error(f"Erro de conexão: {str(e)}")
 
 
-
 def main():
-    if "modo_edicao" not in st.session_state:
-        st.session_state["modo_edicao"] = False
-    if "secao_edicao" not in st.session_state:
-        st.session_state["secao_edicao"] = ""
-    if "criando_avaliacao" not in st.session_state:
-        st.session_state["criando_avaliacao"] = False
+    # ... outras inicializações ...
 
     if not st.session_state.get("avaliacao_selecionada"):
-        col1, col2 = st.columns([3, 1])
+        col1, col2 = st.columns([4, 1])  # Ajuste dos pesos para melhor espaçamento
         with col1:
             sucesso = selecionar_avaliacao()
         with col2:
@@ -328,6 +350,8 @@ def main():
         if st.session_state.get("criando_avaliacao"):
             criar_nova_avaliacao()
             return
+
+    # ... resto do código ...
 
     else:
         col1, col2 = st.columns([6, 1])
