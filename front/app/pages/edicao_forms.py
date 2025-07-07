@@ -62,7 +62,6 @@ st.sidebar.markdown(
 st.title("🛠️ Formulários de Avaliação")
 
 API_URL = "http://localhost:5001/api/perguntas"
-RESPOSTA_API_URL = "http://localhost:5001/api/respostas"
 AVALIACOES_API_URL = "http://localhost:5001/api/avaliacoes"
 
 @st.cache_data(ttl=60)
@@ -172,9 +171,6 @@ def exibir_formulario_avaliacao(perguntas, perfil):
                 st.error(f"Erro ao enviar respostas: {e}")
     else:
         st.info("🔒 Como Diretor, você não pode enviar respostas.")
-
-
-
         
 @st.cache_data(ttl=60)
 def carregar_perguntas():
