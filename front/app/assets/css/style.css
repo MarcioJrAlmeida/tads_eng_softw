@@ -2,8 +2,8 @@
 .stButton > button {
     width: 100%;
     border-radius: 8px;
-    background-color: #08be26;
-    color: white;
+    background-color: #aae657;
+    color: #ffffff;
     border: none;
     padding: 8px 16px;
     margin-bottom: 8px;
@@ -11,13 +11,13 @@
 }
 
 .stButton > button:hover {
-    background-color: #00b3b3;
+    background-color: #92ca43;
     transform: scale(1.02);
 }
 
 /* Sidebar personalizado */
-div[data-testid="stSidebar"] {
-    background-color: #3bb915;
+div[data-testid="stSidebarContent"] {
+    background-color: #8ec63f;
     border-right: 2px solid #ffffff;
 }
 
@@ -31,5 +31,5 @@ h2 {
 }
 
 h3 {
-    color: #00b3b3;
+    color: #1eb139;
 }

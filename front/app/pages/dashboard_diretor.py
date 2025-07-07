@@ -24,21 +24,30 @@ load_css("style.css")
 load_js("index.js")
 
 # --- Menu Lateral com Botões ---
-st.sidebar.title("≡ Menu")
 
-if st.sidebar.button("🏠 Página Inicial"):
+if st.sidebar.button("Home"):
     st.switch_page("pages/home.py")
     
-if st.sidebar.button("📝 Edição Formularios"):
+if st.sidebar.button("Formularios"):
     st.switch_page("pages/edicao_forms.py")
 
-if st.sidebar.button("📊 Dashboard"):
+if st.sidebar.button("Dashboard"):
     st.rerun()  # Recarrega a própria
 
-if st.sidebar.button("🚪 Logout"):
+if st.sidebar.button("Logout"):
     realizar_logout()
 
 st.title("📊 Dashboard de Avaliações")
+
+st.sidebar.markdown("---")
+st.sidebar.markdown(
+    """
+    <h3 style="text-align: center; color: #FFFFFF;">
+        Sistema de Avaliação Docente - IFPE Jaboatão
+    </h3>
+    """,
+    unsafe_allow_html=True
+)
 
 # 🔥 Dados simulados
 np.random.seed(42)
@@ -142,6 +151,7 @@ with col2:
 
 # ------------------- 📈 Gráfico -------------------
 
+#Gráfico de coluna
 if df_filtrado.empty:
     st.warning("⚠️ Nenhum dado encontrado com os filtros selecionados.")
 else:
@@ -155,6 +165,36 @@ else:
     )
 
     st.plotly_chart(fig, use_container_width=True)
+
+#Gráfico Pizza
+respostas = {
+    "Concordo totalmente": 40,
+    "Concordo": 30,
+    "Neutro": 20,
+    "Discordo": 5,
+    "Discordo totalmente": 5
+}
+
+fig = px.pie(
+    names=list(respostas.keys()),
+    values=list(respostas.values()),
+    title="Distribuição das Respostas",
+    color_discrete_sequence=px.colors.sequential.Greens
+)
+st.plotly_chart(fig)
+
+#Gráficos em linhas
+import plotly.graph_objects as go
+
+periodos = ["2023.1", "2023.2", "2024.1", "2024.2"]
+pontuacoes = [3.2, 3.5, 4.1, 4.5]
+
+fig = go.Figure()
+fig.add_trace(go.Scatter(x=periodos, y=pontuacoes, mode='lines+markers', line=dict(color="#007E3D")))
+fig.update_layout(title="Média das Avaliações por Período", xaxis_title="Período", yaxis_title="Nota Média")
+st.plotly_chart(fig)
+
+
 
 # ------------------- 📄 Tabela + Download -------------------
 

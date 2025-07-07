@@ -41,7 +41,15 @@ if st.sidebar.button("Logout"):
     realizar_logout()
     
 st.sidebar.markdown("---")
-st.sidebar.info("Sistema de Avaliação Docente - IFPE Jaboatão")
+st.sidebar.markdown(
+    """
+    <h3 style="text-align: center; color: #FFFFFF;">
+        Sistema de Avaliação Docente - IFPE Jaboatão
+    </h3>
+    """,
+    unsafe_allow_html=True
+)
+
 
 # --- Conteúdo da Página Inicial ---
 st.title("🏠 Home")
