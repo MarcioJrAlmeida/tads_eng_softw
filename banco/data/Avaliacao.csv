@@ -1,2 +1,3 @@
 id_avaliacao;periodo;data_hr_registro;idDiretor;modelo_avaliacao
 1;202501;2025-06-29 11:10:15;1;"{""ordem_perguntas"": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16, 13, 14, 15, 17, 18, 19, 20, 21], ""qtd_perguntas_exibir"": 13}"
+2;202402;2025-07-07 10:42:34;1;"{""ordem_perguntas"": [2, 1, 5, 4, 6, 7, 8, 9, 10, 14, 15, 16], ""qtd_perguntas_exibir"": 12}"

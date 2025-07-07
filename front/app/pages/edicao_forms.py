@@ -17,36 +17,6 @@ st.set_page_config(
 config = load_auth_config()
 authenticator = create_authenticator(config)
 
-def criar_nova_avaliacao():
-    st.subheader("🆕 Criar Nova Avaliação")
-
-    periodo = st.text_input("📅 Período da Avaliação (ex: 2025.1)", key="novo_periodo")
-
-    if st.button("✅ Criar Avaliação"):
-        if not periodo.strip():
-            st.warning("⚠️ O período não pode estar vazio.")
-            return
-
-        payload = {
-            "periodo": periodo,
-            "data_hr_registro": datetime.now().isoformat()
-        }
-
-        try:
-            response = requests.post(AVALIACOES_API_URL, json=payload)
-            if response.status_code == 201:
-                nova_avaliacao = response.json()
-                st.success("✅ Avaliação criada com sucesso!")
-                st.session_state["avaliacao_selecionada"] = nova_avaliacao["id_avaliacao"]
-                st.session_state["avaliacao_info"] = nova_avaliacao
-                st.session_state["criando_avaliacao"] = False
-                st.rerun()
-            else:
-                st.error(f"Erro ao criar avaliação: {response.text}")
-        except Exception as e:
-            st.error(f"Erro de conexão: {str(e)}")
-
-
 # Estado inicial
 if "modo_edicao" not in st.session_state:
     st.session_state["modo_edicao"] = False
@@ -269,6 +239,69 @@ def menu_edicao():
     with col_botao2:
         if st.button("✏️ Editar Perguntas"):
             st.session_state["secao_edicao"] = "Editar Perguntas Existentes"
+            
+def criar_nova_avaliacao():
+    st.subheader("🆕 Criar Nova Avaliação")
+
+    periodo = st.text_input("📅 Período da Avaliação (ex: 202502)", key="novo_periodo")
+
+    perguntas = carregar_perguntas()
+    perguntas_selecionadas = []
+
+    st.markdown("### ✅ Selecione as perguntas para a nova avaliação")
+
+    for pergunta in perguntas:
+        col1, col2, col3 = st.columns([0.6, 0.2, 0.2])
+        with col1:
+            texto_curto = pergunta['texto_pergunta'][:80] + ("..." if len(pergunta['texto_pergunta']) > 80 else "")
+            label = f"{texto_curto} ({pergunta['tipo_pergunta'].capitalize()})"
+            selecionada = st.checkbox(label, key=f"check_criar_{pergunta['id_pergunta']}")
+        with col2:
+            ordem = st.number_input(
+                "Ordem", 
+                min_value=1, 
+                max_value=100, 
+                step=1, 
+                key=f"ordem_criar_{pergunta['id_pergunta']}"
+            ) if selecionada else None
+
+        if selecionada:
+            perguntas_selecionadas.append({
+                "id_pergunta": pergunta["id_pergunta"],
+                "ordem": ordem
+            })
+
+    if st.button("✅ Criar Avaliação"):
+        if not periodo.strip():
+            st.warning("⚠️ O período é obrigatório.")
+            return
+
+        if not perguntas_selecionadas:
+            st.warning("⚠️ Selecione pelo menos uma pergunta.")
+            return
+
+        modelo = {
+            "ordem_perguntas": [p["id_pergunta"] for p in sorted(perguntas_selecionadas, key=lambda x: x["ordem"])],
+            "qtd_perguntas_exibir": len(perguntas_selecionadas)
+        }
+
+        payload = {
+            "periodo": int(periodo),
+            "idDiretor": 1,
+            "modelo_avaliacao": modelo
+        }
+
+        try:
+            response = requests.post("http://localhost:5001/api/avaliacoes", json=payload)
+            if response.status_code == 201:
+                st.success("✅ Avaliação criada com sucesso!")
+                st.session_state["criando_avaliacao"] = False
+                st.rerun()
+            else:
+                st.error(f"Erro ao criar avaliação: {response.text}")
+        except Exception as e:
+            st.error(f"Erro de conexão: {str(e)}")
+
 
 
 def main():
@@ -348,3 +381,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    load_footer()
