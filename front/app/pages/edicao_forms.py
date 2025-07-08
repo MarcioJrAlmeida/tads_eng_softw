@@ -243,6 +243,8 @@ def editar_perguntas_existentes():
                         st.success("Pergunta excluída com sucesso!")
                         st.session_state.pop(f"confirmar_excluir_{pergunta['id_pergunta']}", None)
                         st.rerun()
+                    elif response.status_code == 403:
+                        st.warning("❌ Esta pergunta não pode ser excluída porque possui respostas associadas.")
                     else:
                         st.error("Erro ao excluir pergunta.")
                 except Exception as e:

@@ -63,7 +63,8 @@ CREATE TABLE Resposta (
     id_resposta INT PRIMARY KEY,
     conteudo_resposta VARCHAR(255),
     data_hr_registro DATETIME,
-    idAvaliacao INT
+    idAvaliacao INT,
+    id_pergunta INT
 );
 
 CREATE TABLE Disciplina_Curso (
@@ -135,3 +136,6 @@ ADD FOREIGN KEY (id_disciplina_docente) REFERENCES Disciplina_Docente(id_discipl
 
 ALTER TABLE Possui
 ADD FOREIGN KEY (id_resposta) REFERENCES Resposta(id_resposta);
+
+ALTER TABLE Resposta 
+ADD FOREIGN KEY (id_pergunta) REFERENCES Pergunta(id_pergunta);

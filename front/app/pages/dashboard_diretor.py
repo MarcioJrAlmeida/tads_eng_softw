@@ -1,214 +1,211 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import plotly.express as px
+from streamlit_echarts import st_echarts
+import requests
+
 from app.components.auth import load_auth_config, create_authenticator
 from app.components.utils import realizar_logout, load_css, load_footer, load_js
 
-st.set_page_config(
-    page_title="Dashboard",
-    page_icon="📊",
-    layout="wide"
-)
+st.set_page_config(page_title="Dashboard", page_icon="📊", layout="wide")
 
-# --- Verifica autenticação ---
+# --- Autenticação ---
 config = load_auth_config()
 authenticator = create_authenticator(config)
-
 if st.session_state["authentication_status"] is not True:
     st.warning("Você precisa estar logado para acessar esta página.")
     st.switch_page("login.py")
 
-# Carregar CSS, JS
+# --- Estilo ---
 load_css("style.css")
 load_js("index.js")
 
-# --- Menu Lateral com Botões ---
-
+# --- Sidebar ---
 if st.sidebar.button("Home"):
     st.switch_page("pages/home.py")
-    
 if st.sidebar.button("Formularios"):
     st.switch_page("pages/edicao_forms.py")
-
 if st.sidebar.button("Dashboard"):
-    st.rerun()  # Recarrega a própria
-
+    st.rerun()
 if st.sidebar.button("Logout"):
     realizar_logout()
 
 st.title("📊 Dashboard de Avaliações")
 
+# --- Informações institucionais ---
 st.sidebar.markdown("---")
-st.sidebar.markdown(
-    """
+st.sidebar.markdown("""
     <h3 style="text-align: center; color: #FFFFFF;">
         Sistema de Avaliação Docente - IFPE Jaboatão
     </h3>
-    """,
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
-# 🔥 Dados simulados
-np.random.seed(42)
-
-docentes = ['Prof. A', 'Prof. B', 'Prof. C', 'Prof. D']
-cursos = ['ADS', 'Administração']
-
-cadeiras_ads = [
-    'Programação Web 1', 'Lógica de Programação', 'Sistemas Operacionais',
-    'Inglês 1', 'Fundamentos da Informática', 'Ética Profissional e Cidadania',
-    'Redes de Computadores'
-]
-cadeiras_adm = [
-    'Administração Financeira', 'Gestão de Pessoas', 'Marketing Empresarial',
-    'Ética Profissional e Cidadania', 'Contabilidade Básica',
-    'Logística Empresarial', 'Economia e Mercados'
-]
-
-periodos = ['2024.2', '2025.1']
-
-dados = []
-
-for periodo in periodos:
-    for curso in cursos:
-        cadeiras = cadeiras_ads if curso == 'ADS' else cadeiras_adm
-        for cadeira in cadeiras:
-            for docente in docentes:
-                n_formularios = np.random.randint(5, 20)
-                medias = np.round(np.random.uniform(3.5, 5.0, n_formularios), 1)
-                for media in medias:
-                    dados.append({
-                        'Curso': curso,
-                        'Cadeira': cadeira,
-                        'Docente': docente,
-                        'Período': periodo,
-                        'Média': media
-                    })
-
-df = pd.DataFrame(dados)
-
-# ------------------- 🔍 Filtros Dependentes -------------------
-
-with st.sidebar.expander("🔍 Filtros", expanded=True):
-    # --- Filtro Curso ---
-    curso_selecionado = st.multiselect(
-        "Filtrar por Curso:", options=df['Curso'].unique()
-    )
-
-    # --- Filtrar cadeiras baseado no curso selecionado ---
-    if curso_selecionado:
-        cadeiras_disponiveis = df[df['Curso'].isin(curso_selecionado)]['Cadeira'].unique()
+# --- 🔄 Consumir API ---
+API_URL = "http://localhost:5001/api/dashboard/fechadas"
+try:
+    response = requests.get(API_URL)
+    if response.status_code == 200:
+        df = pd.DataFrame(response.json())
     else:
-        cadeiras_disponiveis = df['Cadeira'].unique()
+        st.error("Erro ao carregar dados do dashboard.")
+        st.stop()
+except Exception as e:
+    st.error(f"Erro de conexão: {str(e)}")
+    st.stop()
 
-    cadeira_selecionada = st.multiselect(
-        "Filtrar por Cadeira:", options=sorted(cadeiras_disponiveis)
-    )
+# --- Filtros ---
+with st.sidebar.expander("🔍 Filtros", expanded=True):
+    cursos = df["Curso"].unique()
+    docentes = df["Professor"].unique()
+    periodos = df["Período"].unique()
+    perguntas = df["Pergunta"].unique()
 
-    # --- Filtro Docente ---
-    docente_selecionado = st.multiselect(
-        "Filtrar por Docente:", options=df['Docente'].unique()
-    )
-
-    # --- Filtro Período ---
-    periodo_selecionado = st.multiselect(
-        "Filtrar por Período:", options=df['Período'].unique()
-    )
-
-# ------------------- 🔥 Aplicar Filtros -------------------
+    curso_selecionado = st.multiselect("Curso:", sorted(cursos))
+    docente_selecionado = st.multiselect("Docente:", sorted(docentes))
+    periodo_selecionado = st.multiselect("Período:", sorted(periodos))
+    pergunta_selecionada = st.multiselect("Pergunta:", sorted(perguntas))
 
 df_filtrado = df.copy()
-
 if curso_selecionado:
-    df_filtrado = df_filtrado[df_filtrado['Curso'].isin(curso_selecionado)]
-
-if cadeira_selecionada:
-    df_filtrado = df_filtrado[df_filtrado['Cadeira'].isin(cadeira_selecionada)]
-
+    df_filtrado = df_filtrado[df_filtrado["Curso"].isin(curso_selecionado)]
 if docente_selecionado:
-    df_filtrado = df_filtrado[df_filtrado['Docente'].isin(docente_selecionado)]
-
+    df_filtrado = df_filtrado[df_filtrado["Professor"].isin(docente_selecionado)]
 if periodo_selecionado:
-    df_filtrado = df_filtrado[df_filtrado['Período'].isin(periodo_selecionado)]
+    df_filtrado = df_filtrado[df_filtrado["Período"].isin(periodo_selecionado)]
+if pergunta_selecionada:
+    df_filtrado = df_filtrado[df_filtrado["Pergunta"].isin(pergunta_selecionada)]
 
-# ------------------- 📊 KPIs -------------------
-
+# --- KPIs
+# KPIs
 col1, col2 = st.columns(2)
+col1.metric("🧾 Total de Respostas", int(df_filtrado["qtd_respostas"].sum()))
+col2.metric("❓ Perguntas Avaliadas", df_filtrado["Pergunta"].nunique())
 
-with col1:
-    st.metric(
-        label="📄 Total de Formulários Preenchidos",
-        value=f"{df_filtrado.shape[0]}"
-    )
-
-with col2:
-    media_global = df_filtrado['Média'].mean()
-    st.metric(
-        label="⭐ Média Global",
-        value=f"{media_global:.2f}" if not np.isnan(media_global) else "0.00"
-    )
-
-# ------------------- 📈 Gráfico -------------------
-
-#Gráfico de coluna
 if df_filtrado.empty:
     st.warning("⚠️ Nenhum dado encontrado com os filtros selecionados.")
 else:
-    fig = px.bar(
-        df_filtrado.groupby(['Docente', 'Período']).mean(numeric_only=True).reset_index(),
-        x='Docente',
-        y='Média',
-        color='Período',
-        barmode='group',
-        title="Média de Avaliações por Docente"
-    )
+    
+    # Padronização de cores por tipo de resposta
+    cores_personalizadas = {
+        "Concordo Totalmente":  "#3498db",   # Verde
+        "Concordo": "#2ecc71",              # Verde mais claro
+        "Neutro": "#95a5a6",                # Cinza
+        "Discordo": "#f1c40f",              # Amarelo
+        "Discordo Totalmente": "#e74c3c"    # Vermelho
+    }
 
-    st.plotly_chart(fig, use_container_width=True)
+    st.subheader("📊 Perguntas e Respostas por Professor")
 
-#Gráfico Pizza
-respostas = {
-    "Concordo totalmente": 40,
-    "Concordo": 30,
-    "Neutro": 20,
-    "Discordo": 5,
-    "Discordo totalmente": 5
-}
+    df_agrupado = df_filtrado.groupby(["Professor", "Pergunta", "Resposta"])["qtd_respostas"].sum().reset_index()
 
-fig = px.pie(
-    names=list(respostas.keys()),
-    values=list(respostas.values()),
-    title="Distribuição das Respostas",
-    color_discrete_sequence=px.colors.sequential.Greens
-)
-st.plotly_chart(fig)
+    professores = sorted(df_agrupado["Professor"].unique())
+    respostas = sorted(df_agrupado["Resposta"].unique())
 
-#Gráficos em linhas
-import plotly.graph_objects as go
+    # Montar as séries por tipo de resposta
+    series = []
+    for resposta in respostas:
+        dados = []
+        for prof in professores:
+            total = df_agrupado[
+                (df_agrupado["Professor"] == prof) &
+                (df_agrupado["Resposta"] == resposta)
+            ]["qtd_respostas"].sum()
+            dados.append(int(total))
 
-periodos = ["2023.1", "2023.2", "2024.1", "2024.2"]
-pontuacoes = [3.2, 3.5, 4.1, 4.5]
+        cor = cores_personalizadas.get(resposta) 
+        series.append({
+            "name": resposta,
+            "type": "bar",
+            "itemStyle": {"color": cor},
+            "emphasis": {"focus": "series"},
+            "data": dados,
+            "barGap": "10%",          
+            "barCategoryGap": "40%"
+        })
 
-fig = go.Figure()
-fig.add_trace(go.Scatter(x=periodos, y=pontuacoes, mode='lines+markers', line=dict(color="#007E3D")))
-fig.update_layout(title="Média das Avaliações por Período", xaxis_title="Período", yaxis_title="Nota Média")
-st.plotly_chart(fig)
+    chart_options = {
+        "tooltip": {"trigger": "axis", "axisPointer": {"type": "shadow"}},
+        "legend": {"orient": "vertical",
+                    "right": 10,
+                    "top": "middle"},
+        "grid": {
+                "left": 80,
+                "right": 100,  
+                "bottom": 60,
+                "containLabel": True
+                    },
+        "xAxis": {
+            "type": "category",
+            "data": professores,
+            "axisLabel": {"rotate": 0, "interval": 0},
+            "name": ""  
+        },
+        "yAxis": {
+            "type": "value",
+            "name": ""  
+        },
+        "series": series
+    }
+
+    st_echarts(options=chart_options, height="500px")
 
 
+    # 📈 Gráfico de linha por Período
+    st.subheader("📈 Evolução de Respostas por Período")
+    df_linha = df_filtrado.groupby("Período")["qtd_respostas"].sum().reset_index()
+    df_linha["qtd_respostas"] = df_linha["qtd_respostas"].astype(int)
 
-# ------------------- 📄 Tabela + Download -------------------
+    linha_opts = {
+        "xAxis": {"type": "category", "data": df_linha["Período"].tolist()},
+        "yAxis": {"type": "value"},
+        "tooltip": {"trigger": "axis"},
+        "series": [{
+            "data": df_linha["qtd_respostas"].tolist(),
+            "type": "line",
+            "smooth": True
+        }]
+    }
+    st_echarts(options=linha_opts, height="400px")
 
-with st.expander("📄 Ver dados em tabela"):
-    st.dataframe(df_filtrado)
+    # 🥧 Pizza de respostas
+    st.subheader("🥧 Distribuição Geral de Respostas")
+    pizza_data = df_filtrado.groupby("Resposta")["qtd_respostas"].sum().reset_index()
+    pizza_data["qtd_respostas"] = pizza_data["qtd_respostas"].astype(int)
+    pizza_opts = {
+        "tooltip": {"trigger": "item"},
+        "legend": {"orient": "vertical",
+                    "right": 10,
+                    "top": "middle"},
+        "grid": {
+                "right": 80  
+                    },
+        "series": [{
+            "type": "pie",
+            "radius": ["40%", "70%"],
+            "avoidLabelOverlap": False,
+            "data": [{"value": int(row["qtd_respostas"]), "name": row["Resposta"]} for _, row in pizza_data.iterrows()]
+        }]
+    }
+    st_echarts(options=pizza_opts, height="400px")
 
-    csv = df_filtrado.to_csv(index=False).encode('utf-8')
-    st.download_button(
-        label="⬇️ Baixar Tabela em CSV",
-        data=csv,
-        file_name='avaliacoes_filtradas.csv',
-        mime='text/csv'
-    )
+    # 🎓 Pizza de cursos
+    st.subheader("🎓 Distribuição por Curso")
+    curso_data = df_filtrado.groupby("Curso")["qtd_respostas"].sum().reset_index()
+    curso_data["qtd_respostas"] = curso_data["qtd_respostas"].astype(int)
+    curso_opts = {
+        "tooltip": {"trigger": "item"},
+        "legend": {"top": "bottom"},
+        "series": [{
+            "type": "pie",
+            "radius": "55%",
+            "data": [{"value": int(row["qtd_respostas"]), "name": row["Curso"]} for _, row in curso_data.iterrows()]
+        }]
+    }
+    st_echarts(options=curso_opts, height="400px")
 
-st.info("Este é um exemplo de visualização. Dados reais estarão conectados ao banco.")
+    # Tabela
+    with st.expander("📄 Ver dados em tabela"):
+        st.dataframe(df_filtrado)
+        csv = df_filtrado.to_csv(index=False).encode("utf-8")
+        st.download_button("⬇️ Baixar CSV", csv, file_name="resumo_dashboard.csv", mime="text/csv")
 
 load_footer()
