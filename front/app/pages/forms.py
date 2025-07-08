@@ -15,7 +15,7 @@ load_js("index.js")
 st.title("🎮 Avaliação de Docentes")
 
 API_URL = "http://localhost:5001/api/perguntas"
-RESPOSTA_API_URL = "http://localhost:5001/api/respostas"
+RESPOSTA_API_URL = "http://localhost:5001/api/resposta"
 MODELO_API_URL = "http://localhost:5001/api/modelo_avaliacao"
 
 
@@ -82,26 +82,28 @@ def exibir_formulario_avaliacao(perguntas, perfil):
 
     if perfil != "Diretor":
         if st.button("📨 Enviar respostas"):
-            for r in respostas:
-                if not r["resposta"] or r["resposta"] == "Selecione...":
-                    st.warning("⚠️ Por favor, responda todas as perguntas.")
-                    return
-
-            payload = {
-                "respostas": respostas,
-                "data_hr_registro": datetime.now().isoformat()
-            }
-
             try:
-                response = requests.post(RESPOSTA_API_URL, json=payload)
-                if response.status_code == 201:
+                id_avaliacao = st.session_state.get("avaliacao_selecionada", 1)
+                sucesso = True
+
+                for r in respostas:
+                    payload = {
+                        "conteudo_resposta": r["resposta"],
+                        "idAvaliacao": id_avaliacao
+                    }
+                    response = requests.post(RESPOSTA_API_URL, json=payload)
+                    if response.status_code != 201:
+                        sucesso = False
+                        st.error(f"Erro ao enviar resposta da pergunta {r['id_pergunta']}")
+
+                if sucesso:
                     # Parabéns e animação
                     st.balloons()
                     st.success("🎉 Parabéns! Respostas enviadas com sucesso!")
-                else:
-                    st.error("Erro ao enviar respostas.")
+
             except Exception as e:
-                st.error(f"Erro ao enviar respostas: {e}")
+                st.error(f"Erro ao enviar: {e}")
+
     else:
         st.info("🔒 Como Diretor, você não pode enviar respostas.")
 
