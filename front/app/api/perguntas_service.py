@@ -132,14 +132,27 @@ def atualizar_pergunta(id_pergunta):
 def excluir_pergunta(id_pergunta):
     try:
         if MODO_DESENVOLVIMENTO == "CSV":
-            caminho = get_csv_path("Pergunta.csv")
-            df = pd.read_csv(caminho, sep=';', dtype=str)
+            caminho = get_csv_path("Resposta.csv")
+            if os.path.exists(caminho):
+                df_respostas = pd.read_csv(caminho, sep=';', dtype=str)
+                if not df_respostas[df_respostas["id_pergunta"] == str(id_pergunta)].empty:
+                    return jsonify({"erro": "Não é possível excluir. Pergunta possui respostas associadas."}), 403
+
+            caminho_pergunta = get_csv_path("Pergunta.csv")
+            df = pd.read_csv(caminho_pergunta, sep=';', dtype=str)
             df = df[df["id_pergunta"] != str(id_pergunta)]
-            df.to_csv(caminho, sep=';', index=False)
+            df.to_csv(caminho_pergunta, sep=';', index=False)
             return jsonify({"mensagem": "Pergunta excluída com sucesso"}), 200
         else:
             conn = get_connection()
             cursor = conn.cursor()
+
+            # Verificação se existem respostas associadas
+            cursor.execute("SELECT COUNT(*) FROM Resposta WHERE id_pergunta = ?", id_pergunta)
+            count = cursor.fetchone()[0]
+            if count > 0:
+                return jsonify({"erro": "Não é possível excluir. Pergunta possui respostas associadas."}), 403
+
             cursor.execute("DELETE FROM Pergunta WHERE id_pergunta = ?", id_pergunta)
             conn.commit()
             return jsonify({"mensagem": "Pergunta excluída com sucesso"}), 200

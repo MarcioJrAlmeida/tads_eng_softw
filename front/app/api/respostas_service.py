@@ -21,28 +21,31 @@ def inserir_resposta():
         data_hr = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         id_disciplina_docente = 1  # por enquanto fixo
 
+        # Verificação de campos obrigatórios
+        campos_obrigatorios = ['conteudo_resposta', 'idAvaliacao', 'id_pergunta']
+        for campo in campos_obrigatorios:
+            if campo not in dados:
+                return jsonify({"erro": f"Campo '{campo}' é obrigatório."}), 400
+
         if MODO_DESENVOLVIMENTO == "CSV":
             caminho_resposta = get_csv_path("Resposta.csv")
             caminho_possui = get_csv_path("Possui.csv")
 
-            # Carrega ou cria os DataFrames
-            df_resposta = pd.read_csv(caminho_resposta, sep=';', dtype=str) if os.path.exists(caminho_resposta) else pd.DataFrame(columns=['id_resposta', 'conteudo_resposta', 'data_hr_registro', 'idAvaliacao'])
+            df_resposta = pd.read_csv(caminho_resposta, sep=';', dtype=str) if os.path.exists(caminho_resposta) else pd.DataFrame(columns=['id_resposta', 'conteudo_resposta', 'data_hr_registro', 'idAvaliacao', 'id_pergunta'])
             df_possui = pd.read_csv(caminho_possui, sep=';', dtype=str) if os.path.exists(caminho_possui) else pd.DataFrame(columns=['id_disciplina_docente', 'id_resposta'])
 
-            # Calcula o próximo id_resposta
             id_resposta = df_resposta["id_resposta"].astype(int).max() + 1 if not df_resposta.empty else 1
 
-            # Insere na tabela Resposta
             nova_resposta = {
                 'id_resposta': str(id_resposta),
                 'conteudo_resposta': dados['conteudo_resposta'],
                 'data_hr_registro': data_hr,
-                'idAvaliacao': str(dados['idAvaliacao'])
+                'idAvaliacao': str(dados['idAvaliacao']),
+                'id_pergunta': str(dados['id_pergunta'])
             }
             df_resposta = pd.concat([df_resposta, pd.DataFrame([nova_resposta])], ignore_index=True)
             df_resposta.to_csv(caminho_resposta, sep=';', index=False)
 
-            # Insere na tabela Possui
             nova_possui = {
                 'id_disciplina_docente': str(id_disciplina_docente),
                 'id_resposta': str(id_resposta)
@@ -56,22 +59,20 @@ def inserir_resposta():
             conn = get_connection()
             cursor = conn.cursor()
 
-            # Pega o próximo id_resposta
             cursor.execute("SELECT ISNULL(MAX(id_resposta), 0) + 1 FROM Resposta")
             id_resposta = cursor.fetchone()[0]
 
-            # Insere na tabela Resposta
             cursor.execute("""
-                INSERT INTO Resposta (id_resposta, conteudo_resposta, data_hr_registro, idAvaliacao)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO Resposta (id_resposta, conteudo_resposta, data_hr_registro, idAvaliacao, id_pergunta)
+                VALUES (?, ?, ?, ?, ?)
             """, (
                 id_resposta,
                 dados['conteudo_resposta'],
                 datetime.now(),
-                dados['idAvaliacao']
+                dados['idAvaliacao'],
+                dados['id_pergunta']
             ))
 
-            # Insere na tabela Possui
             cursor.execute("""
                 INSERT INTO Possui (id_disciplina_docente, id_resposta)
                 VALUES (?, ?)

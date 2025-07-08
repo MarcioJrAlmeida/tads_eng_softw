@@ -1,14 +1,14 @@
-id_resposta;conteudo_resposta;data_hr_registro;id_Avaliacao;idAvaliacao
-1;Concordo totalmente;2025-07-07 16:18:24;;1
-2;Neutro;2025-07-07 16:18:26;;1
-3;Concordo totalmente;2025-07-07 16:18:28;;1
-4;Neutro;2025-07-07 16:18:30;;1
-5;Concordo totalmente;2025-07-07 16:18:32;;1
-6;Concordo totalmente;2025-07-07 16:18:34;;1
-7;Concordo;2025-07-07 16:18:36;;1
-8;Concordo totalmente;2025-07-07 16:18:39;;1
-9;Concordo totalmente;2025-07-07 16:18:41;;1
-10;Concordo totalmente;2025-07-07 16:18:43;;1
-11;Concordo;2025-07-07 16:18:45;;1
-12;Concordo;2025-07-07 16:18:47;;1
-13;Teste inserção de dados na Tabela Resposta;2025-07-07 16:18:49;;1
+id_resposta;conteudo_resposta;data_hr_registro;idAvaliacao;id_pergunta
+1;Concordo totalmente;2025-07-08 09:43:34;1;1
+2;Neutro;2025-07-08 09:43:36;1;2
+3;Concordo totalmente;2025-07-08 09:43:38;1;3
+4;Concordo totalmente;2025-07-08 09:43:40;1;4
+5;Neutro;2025-07-08 09:43:42;1;5
+6;Concordo totalmente;2025-07-08 09:43:44;1;6
+7;Concordo totalmente;2025-07-08 09:43:46;1;7
+8;Neutro;2025-07-08 09:43:48;1;8
+9;Concordo;2025-07-08 09:43:51;1;9
+10;Concordo totalmente;2025-07-08 09:43:53;1;10
+11;Concordo;2025-07-08 09:43:55;1;11
+12;Concordo totalmente;2025-07-08 09:43:57;1;12
+13;Teste inserção de dados na Tabela Respostas;2025-07-08 09:43:59;1;16

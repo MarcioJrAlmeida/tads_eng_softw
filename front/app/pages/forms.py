@@ -89,7 +89,8 @@ def exibir_formulario_avaliacao(perguntas, perfil):
                 for r in respostas:
                     payload = {
                         "conteudo_resposta": r["resposta"],
-                        "idAvaliacao": id_avaliacao
+                        "idAvaliacao": id_avaliacao,
+                        "id_pergunta": r["id_pergunta"]
                     }
                     response = requests.post(RESPOSTA_API_URL, json=payload)
                     if response.status_code != 201:
