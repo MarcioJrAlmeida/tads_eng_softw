@@ -44,7 +44,7 @@ st.sidebar.markdown("---")
 st.sidebar.markdown(
     """
     <h3 style="text-align: center; color: #FFFFFF;">
-        Sistema de Avaliação Docente - IFPE Jaboatão
+        Sistema de Avaliação Docente - IFPE Jaboatão dos Guararapes
     </h3>
     """,
     unsafe_allow_html=True
