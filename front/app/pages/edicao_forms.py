@@ -62,9 +62,9 @@ st.sidebar.markdown(
 st.title("🛠️ Formulários de Avaliação")
 
 API_URL = "http://localhost:5001/api/perguntas"
-RESPOSTA_API_URL = "http://localhost:5001/api/respostas"
 AVALIACOES_API_URL = "http://localhost:5001/api/avaliacoes"
 
+@st.cache_data(ttl=60)
 def carregar_avaliacoes():
     try:
         response = requests.get(AVALIACOES_API_URL)
@@ -78,6 +78,7 @@ def carregar_avaliacoes():
         return []
 
 
+@st.cache_data(ttl=60)
 def carregar_modelo_avaliacao(id_avaliacao: int):
     try:
         response = requests.get(f"http://localhost:5001/api/modelo_avaliacao/{id_avaliacao}")
@@ -88,6 +89,7 @@ def carregar_modelo_avaliacao(id_avaliacao: int):
     except Exception as e:
         st.error(f"Erro ao buscar modelo de avaliação: {str(e)}")
         return {}
+
 
 def selecionar_avaliacao():
     avaliacoes = carregar_avaliacoes()
@@ -169,10 +171,8 @@ def exibir_formulario_avaliacao(perguntas, perfil):
                 st.error(f"Erro ao enviar respostas: {e}")
     else:
         st.info("🔒 Como Diretor, você não pode enviar respostas.")
-
-
-
         
+@st.cache_data(ttl=60)
 def carregar_perguntas():
     try:
         response = requests.get(API_URL)
@@ -184,6 +184,7 @@ def carregar_perguntas():
     except Exception as e:
         st.error(f"Erro: {str(e)}")
         return []
+
 
 def cadastrar_nova_pergunta():
     texto_input = st.text_input("Texto da nova pergunta", key="nova_pergunta_texto")
@@ -242,6 +243,8 @@ def editar_perguntas_existentes():
                         st.success("Pergunta excluída com sucesso!")
                         st.session_state.pop(f"confirmar_excluir_{pergunta['id_pergunta']}", None)
                         st.rerun()
+                    elif response.status_code == 403:
+                        st.warning("❌ Esta pergunta não pode ser excluída porque possui respostas associadas.")
                     else:
                         st.error("Erro ao excluir pergunta.")
                 except Exception as e:
@@ -339,9 +342,8 @@ def main():
         with col1:
             sucesso = selecionar_avaliacao()
         with col2:
-            if st.button("🆕 Nova Avaliação"):
+            if st.button("🆕 Nova Avaliação", key="botao_nova_avaliacao"):
                 st.session_state["criando_avaliacao"] = True
-                st.rerun()
 
         if st.session_state.get("criando_avaliacao"):
             criar_nova_avaliacao()
