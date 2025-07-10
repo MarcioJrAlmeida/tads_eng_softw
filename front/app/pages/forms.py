@@ -3,47 +3,92 @@ import requests
 from datetime import datetime
 from app.components.utils import load_css, load_footer, load_js
 
-st.set_page_config(
-    page_title="Avaliação de Docentes",
-    page_icon="👨🏼‍🏫",
-    layout="centered"
-)
-
+st.set_page_config(page_title="Avaliação de Docentes", page_icon="👨🏼‍🏫", layout="centered")
 load_css("style.css")
 load_js("index.js")
 
 st.title("🎮 Avaliação de Docentes")
 
-API_URL = "http://localhost:5001/api/perguntas"
+# URLs da API
+PERGUNTAS_API = "http://localhost:5001/api/perguntas"
 RESPOSTA_API_URL = "http://localhost:5001/api/resposta"
 MODELO_API_URL = "http://localhost:5001/api/modelo_avaliacao"
-
+DOCENTES_API_URL = "http://localhost:5001/api/disciplinas_docente"
+RESPOSTAS_DOCENTES_API = "http://localhost:5001/api/docentes_avaliados"
+AVALIACOES_API = "http://localhost:5001/api/avaliacoes"
 
 @st.cache_data(show_spinner=False)
 def carregar_perguntas():
     try:
-        response = requests.get(API_URL)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return []
-    except Exception:
+        response = requests.get(PERGUNTAS_API)
+        return response.json() if response.status_code == 200 else []
+    except:
         return []
-
 
 @st.cache_data(show_spinner=False)
 def carregar_modelo_avaliacao(id_avaliacao: int):
     try:
         response = requests.get(f"{MODELO_API_URL}/{id_avaliacao}")
-        if response.status_code == 200:
-            return response.json()
-        else:
-            return {}
-    except Exception:
+        return response.json() if response.status_code == 200 else {}
+    except:
         return {}
 
+@st.cache_data(show_spinner=False)
+def carregar_docentes():
+    try:
+        response = requests.get(DOCENTES_API_URL)
+        return response.json() if response.status_code == 200 else []
+    except:
+        return []
 
-def exibir_formulario_avaliacao(perguntas, perfil):
+@st.cache_data(show_spinner=False)
+def carregar_docentes_disponiveis(id_avaliacao):
+    try:
+        docentes = carregar_docentes()
+        ja_avaliados = buscar_professores_ja_avaliados(id_avaliacao)
+        return [
+            d for d in docentes if int(d['id_disciplina_docente']) not in [int(x) for x in ja_avaliados]
+        ]
+    except:
+        return []
+
+def buscar_professores_ja_avaliados(id_avaliacao: int):
+    try:
+        response = requests.get(f"{RESPOSTAS_DOCENTES_API}?id_avaliacao={id_avaliacao}")
+        if response.status_code == 200:
+            return response.json()
+        return []
+    except:
+        return []
+
+def obter_avaliacao_ativa():
+    try:
+        response = requests.get(AVALIACOES_API)
+        if response.status_code == 200:
+            for a in response.json():
+                if a.get("status_avaliacao") == "Ativo":
+                    return a["id_avaliacao"]
+    except:
+        return None
+
+@st.fragment
+def bloco_pergunta(pergunta, opcoes):
+    texto_curto = pergunta['texto_pergunta'][:80] + ("..." if len(pergunta['texto_pergunta']) > 80 else "")
+    if pergunta['tipo_pergunta'].lower() == "fechada":
+        resposta = st.radio(
+            texto_curto,
+            opcoes,
+            key=f"resposta_{pergunta['id_pergunta']}",
+            horizontal=True
+        )
+    else:
+        resposta = st.text_area(pergunta['texto_pergunta'], key=f"resposta_{pergunta['id_pergunta']}")
+    return {
+        "id_pergunta": pergunta['id_pergunta'],
+        "resposta": opcoes[resposta] if pergunta['tipo_pergunta'].lower() == "fechada" else resposta
+    }
+
+def exibir_formulario_avaliacao(perguntas, id_disciplina_docente, id_avaliacao):
     st.subheader("📋 Formulário de Avaliação Docente")
     respostas = []
 
@@ -55,76 +100,66 @@ def exibir_formulario_avaliacao(perguntas, perfil):
         5: "Concordo totalmente"
     }
 
-    if 'ordem_perguntas' in st.session_state:
-        perguntas_ordenadas = [p for id_ in st.session_state['ordem_perguntas'] for p in perguntas if p['id_pergunta'] == id_]
-    else:
-        perguntas_ordenadas = sorted(perguntas, key=lambda x: x['id_pergunta'])
-
+    perguntas_ordenadas = sorted(perguntas, key=lambda x: x['id_pergunta'])
     qtd_exibir = st.session_state.get('qtd_perguntas_exibir', len(perguntas_ordenadas))
     perguntas_exibidas = perguntas_ordenadas[:qtd_exibir]
 
     for pergunta in perguntas_exibidas:
-        texto_curto = pergunta['texto_pergunta'][:80] + ("..." if len(pergunta['texto_pergunta']) > 80 else "")
-        if pergunta['tipo_pergunta'].lower() == "fechada":
-            resposta = st.radio(
-                texto_curto,
-                opcoes,
-                key=f"resposta_{pergunta['id_pergunta']}",
-                horizontal=True
-            )
-        else:
-            resposta = st.text_area(pergunta['texto_pergunta'], key=f"resposta_{pergunta['id_pergunta']}")
+        resposta = bloco_pergunta(pergunta, opcoes)
+        respostas.append(resposta)
 
-        respostas.append({
-            "id_pergunta": pergunta['id_pergunta'],
-            "resposta": opcoes[resposta] if pergunta['tipo_pergunta'].lower() == "fechada" else resposta
-        })
+    if st.button("📨 Enviar respostas"):
+        sucesso = True
+        for r in respostas:
+            payload = {
+                "conteudo_resposta": r["resposta"],
+                "idAvaliacao": id_avaliacao,
+                "id_pergunta": r["id_pergunta"],
+                "id_disciplina_docente": id_disciplina_docente
+            }
+            response = requests.post(RESPOSTA_API_URL, json=payload)
+            if response.status_code != 201:
+                sucesso = False
+                st.error(f"Erro ao enviar resposta da pergunta {r['id_pergunta']}")
 
-    if perfil != "Diretor":
-        if st.button("📨 Enviar respostas"):
-            try:
-                id_avaliacao = st.session_state.get("avaliacao_selecionada", 1)
-                sucesso = True
-
-                for r in respostas:
-                    payload = {
-                        "conteudo_resposta": r["resposta"],
-                        "idAvaliacao": id_avaliacao,
-                        "id_pergunta": r["id_pergunta"]
-                    }
-                    response = requests.post(RESPOSTA_API_URL, json=payload)
-                    if response.status_code != 201:
-                        sucesso = False
-                        st.error(f"Erro ao enviar resposta da pergunta {r['id_pergunta']}")
-
-                if sucesso:
-                    # Parabéns e animação
-                    st.balloons()
-                    st.success("🎉 Parabéns! Respostas enviadas com sucesso!")
-
-            except Exception as e:
-                st.error(f"Erro ao enviar: {e}")
-
-    else:
-        st.info("🔒 Como Diretor, você não pode enviar respostas.")
-
+        if sucesso:
+            st.balloons()
+            st.success("🎉 Respostas enviadas com sucesso!")
+            st.rerun()
 
 def main():
-    id_avaliacao = st.session_state.get("avaliacao_selecionada", 1)
+    id_avaliacao = obter_avaliacao_ativa()
+    if not id_avaliacao:
+        st.warning("Nenhuma avaliação foi lançada no momento. Aguarde...")
+        return
+    
+    if "modelo" not in st.session_state:
+        st.session_state.modelo = carregar_modelo_avaliacao(id_avaliacao)
 
-    if "perguntas" not in st.session_state:
-        st.session_state.perguntas = carregar_perguntas()
+    ordem_ids = st.session_state.modelo.get("ordem_perguntas", [])
+    qtd_exibir = st.session_state.modelo.get("qtd_perguntas_exibir", len(ordem_ids))    
 
-    if "modelo_avaliacao" not in st.session_state:
-        modelo = carregar_modelo_avaliacao(id_avaliacao)
-        st.session_state['ordem_perguntas'] = modelo.get("ordem_perguntas", [p['id_pergunta'] for p in st.session_state.perguntas])
-        st.session_state['qtd_perguntas_exibir'] = modelo.get("qtd_perguntas_exibir", len(st.session_state.perguntas))
+    todas_perguntas = carregar_perguntas()
+    # Só pega perguntas que estão no modelo da avaliação
+    perguntas_filtradas = [p for p in todas_perguntas if p["id_pergunta"] in ordem_ids] 
 
-    # Use o perfil salvo na sessão ou padrão "Aluno"
-    perfil_usuario = st.session_state.get("perfil_usuario", "Aluno")
+    # Ordena de acordo com o modelo
+    perguntas_ordenadas = sorted(perguntas_filtradas, key=lambda p: ordem_ids.index(p["id_pergunta"]))  
 
-    exibir_formulario_avaliacao(st.session_state.perguntas, perfil_usuario)
+    # Atualiza session_state
+    st.session_state.perguntas = perguntas_ordenadas
+    st.session_state.qtd_perguntas_exibir = qtd_exibir
 
+    docentes_disponiveis = carregar_docentes_disponiveis(id_avaliacao)
+
+    if docentes_disponiveis:
+        nomes = {f"{d['nome_docente']} - {d['nome_disciplina']}": d['id_disciplina_docente'] for d in docentes_disponiveis}
+        opcao = st.selectbox("👨‍🏫 Selecione o professor a ser avaliado:", list(nomes.keys()))
+        if opcao:
+            id_disciplina_docente = nomes[opcao]
+            exibir_formulario_avaliacao(st.session_state.perguntas, id_disciplina_docente, id_avaliacao)
+    else:
+        st.success("✅ Você já avaliou todos os professores disponíveis!")
 
 if __name__ == "__main__":
     main()

@@ -44,7 +44,11 @@ API_URL = "http://localhost:5001/api/dashboard/fechadas"
 try:
     response = requests.get(API_URL)
     if response.status_code == 200:
-        df = pd.DataFrame(response.json())
+        dados = response.json()
+        if not dados:
+            st.warning("⚠️ Nenhum dado disponível para exibir no dashboard.")
+            st.stop()
+        df = pd.DataFrame(dados)
     else:
         st.error("Erro ao carregar dados do dashboard.")
         st.stop()
