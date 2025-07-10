@@ -252,16 +252,16 @@ def editar_perguntas_existentes():
             elif cancelar:
                 st.session_state.pop(f"confirmar_excluir_{pergunta['id_pergunta']}", None)
 
+# Adicionar no topo, após as variáveis iniciais:
+if "criando_avaliacao" not in st.session_state:
+    st.session_state["criando_avaliacao"] = False
+
+# Atualize a função selecao_perguntas com lógica condicional:
 def selecao_perguntas():
     perguntas = carregar_perguntas()
     modelo = {}
     perguntas_modelo = []
     id_avaliacao = st.session_state.get("avaliacao_selecionada")
-
-    if id_avaliacao:
-        modelo = carregar_modelo_avaliacao(id_avaliacao)
-        perguntas_modelo = modelo.get("ordem_perguntas", [])
-        perguntas = sorted([p for p in perguntas if p["id_pergunta"] in perguntas_modelo], key=lambda x: perguntas_modelo.index(x["id_pergunta"]))
 
     perguntas_selecionadas = []
 
@@ -286,7 +286,110 @@ def selecao_perguntas():
                 "ordem": ordem
             })
 
-    
+    if st.session_state.get("criando_avaliacao"):
+        st.session_state["perguntas_nova_avaliacao"] = perguntas_selecionadas
+        return  # Evita mostrar o botão de salvar modelo neste modo
+
+    # Modo edição: botão de salvar e vincular
+    if st.button("📅 Salvar Modelo e Vincular Perguntas"):
+        if not perguntas_selecionadas:
+            st.warning("⚠️ Selecione ao menos uma pergunta.")
+            return
+
+        perguntas_ordenadas = sorted(perguntas_selecionadas, key=lambda x: x["ordem"])
+        ids_perguntas = [p["id_pergunta"] for p in perguntas_ordenadas]
+        modelo = {
+            "ordem_perguntas": ids_perguntas,
+            "qtd_perguntas_exibir": len(ids_perguntas)
+        }
+
+        response_modelo = requests.put(
+            f"http://localhost:5001/api/avaliacoes/{id_avaliacao}",
+            json={"modelo_avaliacao": modelo}
+        )
+
+        response_contem = requests.post(
+            f"http://localhost:5001/api/avaliacoes/{id_avaliacao}/vincular_perguntas",
+            json={"id_perguntas": ids_perguntas}
+        )
+
+        if response_modelo.status_code == 200 and response_contem.status_code == 200:
+            st.success("✅ Modelo salvo e perguntas vinculadas com sucesso!")
+            st.rerun()
+        else:
+            st.error("❌ Erro ao salvar o modelo ou vincular perguntas.")
+
+
+def criar_nova_avaliacao():
+    st.subheader("🆕 Criar Nova Avaliação")
+
+    periodo = st.text_input("📅 Período da Avaliação (ex: 202502)", key="novo_periodo")
+
+    # Menu de edição rápida
+    st.markdown("---")
+    menu_edicao()
+
+    # Seção de perguntas
+    if st.session_state.get("secao_edicao") == "Selecionar Perguntas":
+        selecao_perguntas()
+
+    # Validação e criação
+    if st.button("✅ Criar Avaliação"):
+        if not periodo.strip():
+            st.warning("⚠️ O período é obrigatório.")
+            return
+
+        perguntas_selecionadas = st.session_state.get("perguntas_nova_avaliacao", [])
+        if not perguntas_selecionadas:
+            st.warning("⚠️ Selecione pelo menos uma pergunta.")
+            return
+
+        # Modelo da avaliação
+        perguntas_ordenadas = sorted(perguntas_selecionadas, key=lambda x: x["ordem"])
+        ids_perguntas = [p["id_pergunta"] for p in perguntas_ordenadas]
+
+        modelo = {
+            "ordem_perguntas": ids_perguntas,
+            "qtd_perguntas_exibir": len(ids_perguntas)
+        }
+
+        payload = {
+            "periodo": int(periodo),
+            "idDiretor": 1,
+            "modelo_avaliacao": modelo,
+            "data_lancamento": datetime.now().isoformat()  # Se der erro aqui, substitua por .isoformat()
+        }
+
+        try:
+            response = requests.post("http://localhost:5001/api/avaliacoes", json=payload)
+
+            if response.status_code == 201:
+                nova_avaliacao = response.json()
+                id_avaliacao = nova_avaliacao["id_avaliacao"]
+                
+                # 🔁 Vincular perguntas à avaliação após criar com sucesso
+                ids_perguntas = [p["id_pergunta"] for p in sorted(perguntas_selecionadas, key=lambda x: x["ordem"])]
+                
+                response_vinculo = requests.post(
+                    f"http://localhost:5001/api/avaliacoes/{id_avaliacao}/vincular_perguntas",
+                    json={"id_perguntas": ids_perguntas}
+                )
+
+                if response_vinculo.status_code == 200:
+                    st.success("✅ Avaliação criada e perguntas vinculadas com sucesso!")
+                else:
+                    st.warning("Avaliação criada, mas não foi possível vincular as perguntas.")
+                    st.error(f"Detalhes: {response_vinculo.text}")
+
+                st.session_state["criando_avaliacao"] = False
+                st.rerun()
+
+            else:
+                st.error(f"Erro ao criar avaliação: {response.text}")
+
+        except Exception as e:
+            st.error(f"Erro de conexão: {str(e)}")
+
 
 def menu_edicao():
     st.markdown("### ⚙️ Menu de Edição Rápida")
@@ -316,7 +419,7 @@ def criar_nova_avaliacao():
     periodo = st.text_input("📅 Período da Avaliação (ex: 202502)", key="novo_periodo")
 
     perguntas = carregar_perguntas()
-    perguntas_selecionadas = []
+    perguntas_selecionadas = st.session_state.get("perguntas_nova_avaliacao", [])
 
 
     # Novo: Menu de edição rápida durante a criação da avaliação
@@ -345,7 +448,7 @@ def criar_nova_avaliacao():
             "qtd_perguntas_exibir": len(perguntas_selecionadas)
         }
         
-        dt_lancamento = datetime.now()
+        dt_lancamento = datetime.now().isoformat()
         payload = {
             "periodo": int(periodo),
             "idDiretor": 1,
