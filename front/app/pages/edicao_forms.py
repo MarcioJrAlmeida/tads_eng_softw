@@ -459,9 +459,29 @@ def criar_nova_avaliacao():
         try:
             response = requests.post("http://localhost:5001/api/avaliacoes", json=payload)
             if response.status_code == 201:
-                st.success("✅ Avaliação criada com sucesso!")
+                nova_avaliacao = response.json()
+                id_avaliacao = nova_avaliacao.get("id_avaliacao")
+        
+                if not id_avaliacao:
+                    st.error("❌ A API não retornou o ID da avaliação.")
+                    return
+            
+                # Vincula as perguntas agora
+                ids_perguntas = [p["id_pergunta"] for p in perguntas_selecionadas]
+                response_vinculo = requests.post(
+                    f"http://localhost:5001/api/avaliacoes/{id_avaliacao}/vincular_perguntas",
+                    json={"id_perguntas": ids_perguntas}
+                )
+            
+                if response_vinculo.status_code == 200:
+                    st.success("✅ Avaliação criada e perguntas vinculadas com sucesso!")
+                else:
+                    st.warning("Avaliação criada, mas houve erro ao vincular perguntas.")
+                    st.error(f"Detalhes: {response_vinculo.text}")
+            
                 st.session_state["criando_avaliacao"] = False
                 st.rerun()
+            
             else:
                 st.error(f"Erro ao criar avaliação: {response.text}")
         except Exception as e:
