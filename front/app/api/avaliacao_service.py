@@ -83,7 +83,7 @@ def listar_avaliacoes():
                     "periodo": row.periodo,
                     "data_hr_registro": row.data_hr_registro.strftime("%Y-%m-%d %H:%M:%S"),
                     "status_avaliacao": row.status_avaliacao,
-                    "data_lancamento": row.data_lancamento.strftime("%Y-%m-%d %H:%M:%S")
+                    "data_lancamento": row.data_lancamento
                 }
                 for row in rows
             ]
@@ -139,6 +139,9 @@ def criar_avaliacao():
             cursor.execute("SELECT ISNULL(MAX(id_avaliacao), 0) FROM Avaliacao")
             max_id = cursor.fetchone()[0]
             novo_id = max_id + 1
+            
+            data_lancamento = dados.get("data_lancamento")  # pode vir em string ISO
+            data_lancamento = datetime.fromisoformat(data_lancamento) if data_lancamento else None
 
             cursor.execute("""
                 INSERT INTO Avaliacao (id_avaliacao, periodo, data_hr_registro, idDiretor, modelo_avaliacao)
@@ -152,7 +155,11 @@ def criar_avaliacao():
             ))
 
             conn.commit()
-            return jsonify({"mensagem": "Avaliação criada com sucesso (BD)."}), 201
+            return jsonify({
+                    "mensagem": "Avaliação criada com sucesso (BD).",
+                    "id_avaliacao": novo_id
+                }), 201
+
 
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
@@ -175,5 +182,28 @@ def atualizar_status_avaliacao(id_avaliacao):
 
         conn.commit()
         return jsonify({"mensagem": f"Avaliação {id_avaliacao} atualizada para {novo_status}."}), 200
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+
+@avaliacoes_api.route('/avaliacoes/<int:id_avaliacao>/vincular_perguntas', methods=['POST'])
+def vincular_perguntas(id_avaliacao):
+    try:
+        dados = request.json
+        lista_perguntas = dados.get("id_perguntas", [])
+
+        if not lista_perguntas:
+            return jsonify({"erro": "Lista de perguntas vazia"}), 400
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        for id_pergunta in lista_perguntas:
+            cursor.execute("""
+                INSERT INTO Contem (id_avaliacao, id_pergunta) VALUES (?, ?)
+            """, (id_avaliacao, id_pergunta))
+
+        conn.commit()
+        return jsonify({"mensagem": f"{len(lista_perguntas)} perguntas vinculadas à avaliação {id_avaliacao}"}), 200
+
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
