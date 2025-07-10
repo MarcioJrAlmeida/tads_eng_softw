@@ -71,7 +71,7 @@ def listar_avaliacoes():
             cursor = conn.cursor()
 
             cursor.execute("""
-                SELECT id_avaliacao, periodo, data_hr_registro
+                SELECT id_avaliacao, periodo, data_hr_registro, status_avaliacao, data_lancamento
                 FROM Avaliacao
                 ORDER BY id_avaliacao
             """)
@@ -81,7 +81,9 @@ def listar_avaliacoes():
                 {
                     "id_avaliacao": row.id_avaliacao,
                     "periodo": row.periodo,
-                    "data_hr_registro": row.data_hr_registro.strftime("%Y-%m-%d %H:%M:%S")
+                    "data_hr_registro": row.data_hr_registro.strftime("%Y-%m-%d %H:%M:%S"),
+                    "status_avaliacao": row.status_avaliacao,
+                    "data_lancamento": row.data_lancamento.strftime("%Y-%m-%d %H:%M:%S")
                 }
                 for row in rows
             ]
@@ -152,5 +154,26 @@ def criar_avaliacao():
             conn.commit()
             return jsonify({"mensagem": "Avaliação criada com sucesso (BD)."}), 201
 
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+
+@avaliacoes_api.route('/avaliacoes/<int:id_avaliacao>/status', methods=['PUT'])
+def atualizar_status_avaliacao(id_avaliacao):
+    try:
+        novo_status = request.json.get("status_avaliacao")
+        dt_lancamento = datetime.now()
+        if novo_status not in ["Ativo", "Inativo"]:
+            return jsonify({"erro": "Status inválido. Use 'Ativo' ou 'Inativo'."}), 400
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Define todas como inativas antes
+        cursor.execute("UPDATE Avaliacao SET status_avaliacao = 'Inativo'")
+        cursor.execute("""UPDATE Avaliacao SET status_avaliacao = ?, data_lancamento = ? WHERE id_avaliacao = ?""", 
+                       (novo_status, dt_lancamento, id_avaliacao))
+
+        conn.commit()
+        return jsonify({"mensagem": f"Avaliação {id_avaliacao} atualizada para {novo_status}."}), 200
     except Exception as e:
         return jsonify({"erro": str(e)}), 500

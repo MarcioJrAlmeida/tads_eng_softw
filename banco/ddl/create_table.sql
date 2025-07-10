@@ -48,7 +48,9 @@ CREATE TABLE Avaliacao (
     periodo INT,
     data_hr_registro DATETIME,
     idDiretor INT,
-    modelo_avaliacao NVARCHAR(MAX) -- Novo campo para armazenar JSON com configuração
+    modelo_avaliacao NVARCHAR(MAX), -- Novo campo para armazenar JSON com configuração
+    status_avaliacao VARCHAR(10) DEFAULT 'Inativo',  -- Novo campo para armazenar o status da avaliação ou lançamento dela
+    data_lancamento DATETIME -- Novo campo para armazenar a data laçamento do formulario
 );
 
 

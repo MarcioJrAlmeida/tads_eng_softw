@@ -252,35 +252,20 @@ def editar_perguntas_existentes():
             elif cancelar:
                 st.session_state.pop(f"confirmar_excluir_{pergunta['id_pergunta']}", None)
 
-            
-def menu_edicao():
-    st.markdown("### ⚙️ Menu de Edição Rápida")
-
-    col_voltar, col_botao1, col_botao2 = st.columns([1, 1, 1])
-
-    with col_voltar:
-        if st.button("🔙 Voltar"):
-            st.session_state["modo_edicao"] = False
-            st.rerun()
-
-    with col_botao1:
-        if st.button("🆕 Nova Pergunta"):
-            st.session_state["secao_edicao"] = "Cadastrar Nova Pergunta"
-
-    with col_botao2:
-        if st.button("✏️ Editar Perguntas"):
-            st.session_state["secao_edicao"] = "Editar Perguntas Existentes"
-            
-def criar_nova_avaliacao():
-    st.subheader("🆕 Criar Nova Avaliação")
-
-    periodo = st.text_input("📅 Período da Avaliação (ex: 202502)", key="novo_periodo")
-
+def selecao_perguntas():
     perguntas = carregar_perguntas()
+    modelo = {}
+    perguntas_modelo = []
+    id_avaliacao = st.session_state.get("avaliacao_selecionada")
+
+    if id_avaliacao:
+        modelo = carregar_modelo_avaliacao(id_avaliacao)
+        perguntas_modelo = modelo.get("ordem_perguntas", [])
+        perguntas = sorted([p for p in perguntas if p["id_pergunta"] in perguntas_modelo], key=lambda x: perguntas_modelo.index(x["id_pergunta"]))
+
     perguntas_selecionadas = []
 
-    st.markdown("### ✅ Selecione as perguntas para a nova avaliação")
-
+    st.markdown("### ✅ Selecione as perguntas do formulário")
     for pergunta in perguntas:
         col1, col2, col3 = st.columns([0.6, 0.2, 0.2])
         with col1:
@@ -295,12 +280,56 @@ def criar_nova_avaliacao():
                 step=1, 
                 key=f"ordem_criar_{pergunta['id_pergunta']}"
             ) if selecionada else None
-
         if selecionada:
             perguntas_selecionadas.append({
                 "id_pergunta": pergunta["id_pergunta"],
                 "ordem": ordem
             })
+
+    
+
+def menu_edicao():
+    st.markdown("### ⚙️ Menu de Edição Rápida")
+
+    col_voltar, col_botao1, col_botao2, col_botao3 = st.columns([1, 1, 1, 1])
+
+    with col_voltar:
+        if st.button("🔙 Voltar"):
+            st.session_state["modo_edicao"] = False
+            st.rerun()
+
+    with col_botao1:
+        if st.button("🆕 Nova Pergunta"):
+            st.session_state["secao_edicao"] = "Cadastrar Nova Pergunta"
+
+    with col_botao2:
+        if st.button("✏️ Editar Perguntas"):
+            st.session_state["secao_edicao"] = "Editar Perguntas Existentes"
+            
+    with col_botao3:
+        if st.button("📌 Seleção Perguntas"):
+            st.session_state["secao_edicao"] = "Selecionar Perguntas"
+            
+def criar_nova_avaliacao():
+    st.subheader("🆕 Criar Nova Avaliação")
+
+    periodo = st.text_input("📅 Período da Avaliação (ex: 202502)", key="novo_periodo")
+
+    perguntas = carregar_perguntas()
+    perguntas_selecionadas = []
+
+
+    # Novo: Menu de edição rápida durante a criação da avaliação
+    st.markdown("---")
+    menu_edicao()
+
+    if st.session_state["secao_edicao"] == "Cadastrar Nova Pergunta":
+        cadastrar_nova_pergunta()
+    elif st.session_state["secao_edicao"] == "Editar Perguntas Existentes":
+        editar_perguntas_existentes()
+        
+    if st.session_state.get("secao_edicao") == "Selecionar Perguntas":
+        selecao_perguntas()
 
     if st.button("✅ Criar Avaliação"):
         if not periodo.strip():
@@ -315,11 +344,13 @@ def criar_nova_avaliacao():
             "ordem_perguntas": [p["id_pergunta"] for p in sorted(perguntas_selecionadas, key=lambda x: x["ordem"])],
             "qtd_perguntas_exibir": len(perguntas_selecionadas)
         }
-
+        
+        dt_lancamento = datetime.now()
         payload = {
             "periodo": int(periodo),
             "idDiretor": 1,
-            "modelo_avaliacao": modelo
+            "modelo_avaliacao": modelo,
+            "data_lancamento": dt_lancamento
         }
 
         try:
@@ -403,7 +434,52 @@ def main():
             cadastrar_nova_pergunta()
         elif st.session_state["secao_edicao"] == "Editar Perguntas Existentes":
             editar_perguntas_existentes()
-    
+        elif st.session_state["secao_edicao"] == "Selecionar Perguntas":
+            selecao_perguntas()
+            
+        # Verifica se há uma avaliação ativa
+    def buscar_avaliacao_ativa():
+        try:
+            response = requests.get("http://localhost:5001/api/avaliacoes")
+            if response.status_code == 200:
+                for a in response.json():
+                    if a.get("status_avaliacao") == "Ativo":
+                        return a
+            return None
+        except:
+            return None
+
+    avaliacao_ativa = buscar_avaliacao_ativa()
+
+    if id_avaliacao:
+        if avaliacao_ativa:
+            if avaliacao_ativa["id_avaliacao"] == id_avaliacao:
+                st.info("✅ Esta avaliação já está ativa.")
+                if st.button("🛑 Desativar Avaliação"):
+                    response = requests.put(
+                        f"http://localhost:5001/api/avaliacoes/{id_avaliacao}/status",
+                        json={"status_avaliacao": "Inativo"}
+                    )
+                    if response.status_code == 200:
+                        st.success("Avaliação desativada com sucesso.")
+                        st.rerun()
+                    else:
+                        st.error("Erro ao desativar a avaliação.")
+            else:
+                st.warning(f"⚠️ Já existe uma avaliação ativa: ID {avaliacao_ativa['id_avaliacao']} - Período {avaliacao_ativa['periodo']}.")
+                st.info("Para ativar esta, desative a avaliação atual primeiro.")
+        else:
+            if st.button("🚀 Lançar Avaliação"):
+                response = requests.put(
+                    f"http://localhost:5001/api/avaliacoes/{id_avaliacao}/status",
+                    json={"status_avaliacao": "Ativo"}
+                )
+                if response.status_code == 200:
+                    st.success("✅ Avaliação lançada com sucesso!")
+                    st.rerun()
+                else:
+                    st.error("Erro ao lançar a avaliação.")
+
 
 if __name__ == "__main__":
     main()

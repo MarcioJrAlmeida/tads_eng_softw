@@ -19,7 +19,10 @@ def inserir_resposta():
     try:
         dados = request.json
         data_hr = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        id_disciplina_docente = 1  # por enquanto fixo
+        id_disciplina_docente = dados.get("id_disciplina_docente")
+        if not id_disciplina_docente:
+            return jsonify({"erro": "Campo 'id_disciplina_docente' é obrigatório."}), 400
+
 
         # Verificação de campos obrigatórios
         campos_obrigatorios = ['conteudo_resposta', 'idAvaliacao', 'id_pergunta']
