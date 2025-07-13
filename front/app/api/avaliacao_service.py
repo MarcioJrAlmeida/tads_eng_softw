@@ -163,6 +163,28 @@ def criar_avaliacao():
 
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
+    
+@avaliacoes_api.route('/avaliacoes/<int:id_avaliacao>/modelo', methods=['PUT'])
+def atualizar_modelo_avaliacao(id_avaliacao):
+    try:
+        dados = request.json
+        modelo = dados.get("modelo_avaliacao")
+        if not modelo:
+            return jsonify({"erro": "modelo_avaliacao é obrigatório"}), 400
+
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE Avaliacao
+            SET modelo_avaliacao = ?
+            WHERE id_avaliacao = ?
+        """, (json.dumps(modelo), id_avaliacao))
+        conn.commit()
+
+        return jsonify({"mensagem": "Modelo atualizado com sucesso"}), 200
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+
 
 @avaliacoes_api.route('/avaliacoes/<int:id_avaliacao>/status', methods=['PUT'])
 def atualizar_status_avaliacao(id_avaliacao):
@@ -185,7 +207,7 @@ def atualizar_status_avaliacao(id_avaliacao):
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
 
-@avaliacoes_api.route('/avaliacoes/<int:id_avaliacao>/vincular_perguntas', methods=['POST'])
+@avaliacoes_api.route('/avaliacoes/<int:id_avaliacao>/vincular_perguntas', methods=['PUT'])
 def vincular_perguntas(id_avaliacao):
     try:
         dados = request.json
@@ -197,13 +219,34 @@ def vincular_perguntas(id_avaliacao):
         conn = get_connection()
         cursor = conn.cursor()
 
-        for id_pergunta in lista_perguntas:
+        # Obter perguntas já existentes
+        cursor.execute("SELECT id_pergunta FROM Contem WHERE id_avaliacao = ?", (id_avaliacao,))
+        perguntas_existentes = [row.id_pergunta for row in cursor.fetchall()]
+
+        # Determinar perguntas a inserir e remover
+        perguntas_a_inserir = list(set(lista_perguntas) - set(perguntas_existentes))
+        perguntas_a_remover = list(set(perguntas_existentes) - set(lista_perguntas))
+
+        # Remover perguntas desmarcadas
+        for id_pergunta in perguntas_a_remover:
             cursor.execute("""
-                INSERT INTO Contem (id_avaliacao, id_pergunta) VALUES (?, ?)
+                DELETE FROM Contem 
+                WHERE id_avaliacao = ? AND id_pergunta = ?
+            """, (id_avaliacao, id_pergunta))
+
+        # Inserir novas perguntas
+        for id_pergunta in perguntas_a_inserir:
+            cursor.execute("""
+                INSERT INTO Contem (id_avaliacao, id_pergunta) 
+                VALUES (?, ?)
             """, (id_avaliacao, id_pergunta))
 
         conn.commit()
-        return jsonify({"mensagem": f"{len(lista_perguntas)} perguntas vinculadas à avaliação {id_avaliacao}"}), 200
+        return jsonify({
+            "mensagem": f"Perguntas atualizadas para a avaliação {id_avaliacao}.",
+            "inseridas": perguntas_a_inserir,
+            "removidas": perguntas_a_remover
+        }), 200
 
     except Exception as e:
         return jsonify({"erro": str(e)}), 500

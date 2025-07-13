@@ -25,11 +25,11 @@ def analisar_texto_hibrido(resposta: str, pergunta: str):
         r_local.get("score_semantica") or
         r_local.get("score_toxidade") or
         r_local.get("score_ml_sentimento") or
-        0
+        r_local.get("score")
     )
 
     # Se ambos tiverem alta confiança, retorna o local
-    if score >= 0.65:
+    if score >= 0.75:
         return resultado_local
     
     resultado_ia = analisar_texto_llm(resposta, pergunta)

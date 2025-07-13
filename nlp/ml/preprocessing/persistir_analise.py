@@ -24,6 +24,8 @@ def salvar_analise(frase, resultado):
             payload = {
                 "id": frase['id'],
                 "id_avaliacao": frase['id_avaliacao'],
+                "id_pergunta": frase['id_pergunta'],
+                "id_resposta": frase['id_resposta'],
                 "contexto_pergunta": frase['contexto_pergunta'],
                 "conteudo_resposta": frase['conteudo_resposta'],
                 "modelo_utilizado": r['metodo_detectado'],

@@ -70,7 +70,7 @@ def prever_ambos(contexto_pergunta, conteudo_resposta):
 
 # Teste isolado
 if __name__ == "__main__":
-    pergunta = "Como você avalia o professor?"
+    pergunta = "Qual a sua opinião sobre a metodologia de aula do Professor?"
     resposta = input("Digite a resposta do aluno: ")
 
     resultado = prever_ambos(pergunta, resposta)

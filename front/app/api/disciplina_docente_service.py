@@ -132,11 +132,47 @@ def docentes_avaliados():
                 FROM Possui AS p
                 INNER JOIN Resposta AS r ON p.id_resposta = r.id_resposta
                 WHERE r.idAvaliacao = ?
-            """, (id_avaliacao,))
+            """, (id_avaliacao, ))
             dados = cursor.fetchall()
 
             ids = [int(row[0]) for row in dados if row[0] is not None]
             return jsonify(ids), 200
+
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+
+@disciplina_api.route('/docentes_nao_avaliados', methods=['GET'])
+def docentes_nao_avaliados():
+    try:
+        id_avaliacao = request.args.get('id_avaliacao', type=str)
+        if not id_avaliacao or id_avaliacao.strip() == "":
+            return jsonify({"erro": "Parâmetro 'id_avaliacao' não fornecido ou vazio."}), 400
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Busca todos os docentes da avaliação
+        cursor.execute("""
+            SELECT DISTINCT dd.id_disciplina_docente
+            FROM Avaliacao a
+            JOIN Contem c ON a.id_avaliacao = c.id_avaliacao
+            JOIN Pergunta p ON c.id_pergunta = p.id_pergunta
+            JOIN Disciplina_Docente dd ON 1=1
+            WHERE a.id_avaliacao = ?
+        """, (id_avaliacao,))
+        todos = {int(r[0]) for r in cursor.fetchall()}
+
+        # Busca os que já foram avaliados
+        cursor.execute("""
+            SELECT DISTINCT p.id_disciplina_docente
+            FROM Possui AS p
+            INNER JOIN Resposta AS r ON p.id_resposta = r.id_resposta
+            WHERE r.idAvaliacao = ?
+        """, (id_avaliacao,))
+        avaliados = {int(r[0]) for r in cursor.fetchall()}
+
+        nao_avaliados = list(todos - avaliados)
+        return jsonify(nao_avaliados), 200
 
     except Exception as e:
         return jsonify({"erro": str(e)}), 500

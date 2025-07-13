@@ -63,7 +63,7 @@ CREATE TABLE Pergunta (
 
 CREATE TABLE Resposta (
     id_resposta INT PRIMARY KEY,
-    conteudo_resposta VARCHAR(255),
+    conteudo_resposta VARCHAR(MAX),
     data_hr_registro DATETIME,
     idAvaliacao INT,
     id_pergunta INT

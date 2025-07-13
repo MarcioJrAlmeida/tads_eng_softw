@@ -21,8 +21,8 @@ CREATE TABLE suspeitas_ofensivas (
 CREATE TABLE Frases_Analisadas (
     id INT IDENTITY(1,1) PRIMARY KEY,
 	id_avaliacao INT,
-    contexto_pergunta NVARCHAR(255),
-	conteudo_resposta NVARCHAR(255),
+    contexto_pergunta NVARCHAR(MAX),
+	conteudo_resposta NVARCHAR(MAX),
     modelo_utilizado NVARCHAR(100),
     sentimento_classificado NVARCHAR(20), -- positivo, negativo, neutro
     ofensiva BIT,                         -- 1 = sim, 0 = n�o
