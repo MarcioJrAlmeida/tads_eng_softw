@@ -63,6 +63,4 @@ O sistema permite que você avalie os docentes do IFPE Jaboatão, visualize dash
 Para mais informações, consulte a documentação ou entre em contato com a equipe de desenvolvimento.
 """)
 
-st.success("Você está na Página Inicial!")
-
 load_footer()

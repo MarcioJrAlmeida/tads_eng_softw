@@ -14,7 +14,7 @@ PERGUNTAS_API = "http://localhost:5001/api/perguntas"
 RESPOSTA_API_URL = "http://localhost:5001/api/resposta"
 MODELO_API_URL = "http://localhost:5001/api/modelo_avaliacao"
 DOCENTES_API_URL = "http://localhost:5001/api/disciplinas_docente"
-RESPOSTAS_DOCENTES_API = "http://localhost:5001/api/docentes_avaliados"
+RESPOSTAS_DOCENTES_API = "http://localhost:5001/api/docentes_nao_avaliados"
 AVALIACOES_API = "http://localhost:5001/api/avaliacoes"
 
 @st.cache_data(show_spinner=False)
@@ -44,11 +44,12 @@ def carregar_docentes():
 @st.cache_data(show_spinner=False)
 def carregar_docentes_disponiveis(id_avaliacao):
     try:
-        docentes = carregar_docentes()
-        ja_avaliados = buscar_professores_ja_avaliados(id_avaliacao)
-        return [
-            d for d in docentes if int(d['id_disciplina_docente']) not in [int(x) for x in ja_avaliados]
-        ]
+        response = requests.get(f"{RESPOSTAS_DOCENTES_API}?id_avaliacao={id_avaliacao}")
+        if response.status_code == 200:
+            ids_nao_avaliados = [int(i) for i in response.json()]
+            todos_docentes = carregar_docentes()
+            return [d for d in todos_docentes if int(d['id_disciplina_docente']) in ids_nao_avaliados]
+        return []
     except:
         return []
 
@@ -73,7 +74,7 @@ def obter_avaliacao_ativa():
 
 @st.fragment
 def bloco_pergunta(pergunta, opcoes):
-    texto_curto = pergunta['texto_pergunta'][:80] + ("..." if len(pergunta['texto_pergunta']) > 80 else "")
+    texto_curto = pergunta['texto_pergunta'] # [:80] + ("..." if len(pergunta['texto_pergunta']) > 80 else "")
     if pergunta['tipo_pergunta'].lower() == "fechada":
         resposta = st.radio(
             texto_curto,
@@ -124,7 +125,7 @@ def exibir_formulario_avaliacao(perguntas, id_disciplina_docente, id_avaliacao):
 
         if sucesso:
             st.balloons()
-            st.success("🎉 Respostas enviadas com sucesso!")
+            st.toast("🎉 Respostas enviadas com sucesso!")
             st.rerun()
 
 def main():
@@ -152,16 +153,21 @@ def main():
 
     docentes_disponiveis = carregar_docentes_disponiveis(id_avaliacao)
 
-    if docentes_disponiveis:
-        nomes = {f"{d['nome_docente']} - {d['nome_disciplina']}": d['id_disciplina_docente'] for d in docentes_disponiveis}
+    if docentes_disponiveis is None:
+        st.error("❌ Erro ao carregar os professores disponíveis.")
+    elif docentes_disponiveis:
+        nomes = {
+            f"{d['nome_docente']} - {d['nome_disciplina']}": d['id_disciplina_docente']
+            for d in docentes_disponiveis
+        }
         opcao = st.selectbox("👨‍🏫 Selecione o professor a ser avaliado:", list(nomes.keys()))
         if opcao:
             id_disciplina_docente = nomes[opcao]
             exibir_formulario_avaliacao(st.session_state.perguntas, id_disciplina_docente, id_avaliacao)
     else:
-        st.success("✅ Você já avaliou todos os professores disponíveis!")
+        st.info("🎓 Nenhum professor pendente de avaliação neste momento.")
+
 
 if __name__ == "__main__":
     main()
-
 load_footer()

@@ -9,7 +9,7 @@ sys.path.insert(0, ROOT_DIR)
 
 from nlp.ml.validadores.analise_texto_hibrido import analisar_texto_hibrido
 
-pergunta = "Como você avalia o desempenho do professor durante o semestre?"
+pergunta = "Qual a sua opinião sobre a metodologia de aula do Professor?"
 
 print("🔍 Avaliação de Resposta Aberta")
 print(f"❓ Pergunta: {pergunta}")
@@ -17,8 +17,6 @@ print(f"❓ Pergunta: {pergunta}")
 resposta = input("✏️  Digite a resposta do aluno: ").strip()
 
 resultado = analisar_texto_hibrido(resposta, pergunta)
-
-
 
 if isinstance(resultado, list) and all(isinstance(r, dict) for r in resultado):
     print("✅ Resultado da Análise Estruturada:")
@@ -29,7 +27,8 @@ if isinstance(resultado, list) and all(isinstance(r, dict) for r in resultado):
             r.get("score_ofensa_explicita") or
             r.get("score_semantica") or
             r.get("score_toxidade") or
-            r.get("score_ml_sentimento") 
+            r.get("score_ml_sentimento") or
+            r.get("score")
         )
         print(f"- Método: {r['metodo_detectado']}")
         print(f"  → Ofensiva: {r['eh_ofensiva']}")

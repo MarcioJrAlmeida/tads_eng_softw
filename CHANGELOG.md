@@ -3,6 +3,11 @@
 Todas as mudanças notáveis à esse repositório devem ser documentadas nesse arquivo.
 Esse formato de changelog é baseado no [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [1.1.2] - 2025-07-13
+### Changed
+    - Alteração nna pasta */pages*
+        - Ajustes e finalizações no frontEnd, BackEnd e no NLP
+
 ## [1.1.1] - 2025-06-28
 ### Added
     - Criação de pasta no diretório */banco*

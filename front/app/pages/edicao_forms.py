@@ -64,7 +64,7 @@ st.title("🛠️ Formulários de Avaliação")
 API_URL = "http://localhost:5001/api/perguntas"
 AVALIACOES_API_URL = "http://localhost:5001/api/avaliacoes"
 
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=60, show_spinner=False)
 def carregar_avaliacoes():
     try:
         response = requests.get(AVALIACOES_API_URL)
@@ -78,7 +78,7 @@ def carregar_avaliacoes():
         return []
 
 
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=60, show_spinner=False)
 def carregar_modelo_avaliacao(id_avaliacao: int):
     try:
         response = requests.get(f"http://localhost:5001/api/modelo_avaliacao/{id_avaliacao}")
@@ -172,7 +172,7 @@ def exibir_formulario_avaliacao(perguntas, perfil):
     else:
         st.info("🔒 Como Diretor, você não pode enviar respostas.")
         
-@st.cache_data(ttl=60)
+@st.cache_data(ttl=60, show_spinner=False)
 def carregar_perguntas():
     try:
         response = requests.get(API_URL)
@@ -259,38 +259,49 @@ if "criando_avaliacao" not in st.session_state:
 # Atualize a função selecao_perguntas com lógica condicional:
 def selecao_perguntas():
     perguntas = carregar_perguntas()
-    modelo = {}
-    perguntas_modelo = []
     id_avaliacao = st.session_state.get("avaliacao_selecionada")
-
     perguntas_selecionadas = []
 
+    modelo_atual = carregar_modelo_avaliacao(id_avaliacao) if id_avaliacao else {}
+    ordem_existente = modelo_atual.get("ordem_perguntas", [])
+    ordem_dict = {id_: i+1 for i, id_ in enumerate(ordem_existente)}
+
     st.markdown("### ✅ Selecione as perguntas do formulário")
+
     for pergunta in perguntas:
-        col1, col2, col3 = st.columns([0.6, 0.2, 0.2])
+        id_pergunta = pergunta["id_pergunta"]
+        texto_curto = pergunta['texto_pergunta'][:80] + ("..." if len(pergunta['texto_pergunta']) > 80 else "")
+        label = f"{texto_curto} ({pergunta['tipo_pergunta'].capitalize()})"
+
+        # Checa se a pergunta está no modelo atual
+        esta_no_modelo = id_pergunta in ordem_existente
+
+        col1, col2 = st.columns([0.7, 0.3])
         with col1:
-            texto_curto = pergunta['texto_pergunta'][:80] + ("..." if len(pergunta['texto_pergunta']) > 80 else "")
-            label = f"{texto_curto} ({pergunta['tipo_pergunta'].capitalize()})"
-            selecionada = st.checkbox(label, key=f"check_criar_{pergunta['id_pergunta']}")
+            selecionada = st.checkbox(label, value=esta_no_modelo, key=f"check_edit_{id_pergunta}")
+
         with col2:
             ordem = st.number_input(
-                "Ordem", 
-                min_value=1, 
-                max_value=100, 
-                step=1, 
-                key=f"ordem_criar_{pergunta['id_pergunta']}"
+                "Ordem",
+                min_value=1,
+                max_value=100,
+                step=1,
+                value=ordem_dict.get(id_pergunta, 1),
+                key=f"ordem_edit_{id_pergunta}"
             ) if selecionada else None
+
         if selecionada:
             perguntas_selecionadas.append({
-                "id_pergunta": pergunta["id_pergunta"],
+                "id_pergunta": id_pergunta,
                 "ordem": ordem
             })
 
+    # MODO CRIAÇÃO
     if st.session_state.get("criando_avaliacao"):
         st.session_state["perguntas_nova_avaliacao"] = perguntas_selecionadas
-        return  # Evita mostrar o botão de salvar modelo neste modo
+        return  # Evita exibir botão de salvar neste modo
 
-    # Modo edição: botão de salvar e vincular
+    # MODO EDIÇÃO
     if st.button("📅 Salvar Modelo e Vincular Perguntas"):
         if not perguntas_selecionadas:
             st.warning("⚠️ Selecione ao menos uma pergunta.")
@@ -304,11 +315,12 @@ def selecao_perguntas():
         }
 
         response_modelo = requests.put(
-            f"http://localhost:5001/api/avaliacoes/{id_avaliacao}",
+            f"http://localhost:5001/api/avaliacoes/{id_avaliacao}/modelo",
             json={"modelo_avaliacao": modelo}
         )
 
-        response_contem = requests.post(
+
+        response_contem = requests.put(
             f"http://localhost:5001/api/avaliacoes/{id_avaliacao}/vincular_perguntas",
             json={"id_perguntas": ids_perguntas}
         )
@@ -318,7 +330,6 @@ def selecao_perguntas():
             st.rerun()
         else:
             st.error("❌ Erro ao salvar o modelo ou vincular perguntas.")
-
 
 def criar_nova_avaliacao():
     st.subheader("🆕 Criar Nova Avaliação")

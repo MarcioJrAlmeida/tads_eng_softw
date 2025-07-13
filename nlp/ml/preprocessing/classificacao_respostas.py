@@ -22,16 +22,28 @@ def buscar_respostas_abertas():
 def inserir_frase_suspeita(row, resultado):
     url = f"{API_SADO_ML_URL}/frases_suspeitas"
     for r in resultado:
+        score = (
+            r.get("score_critica") or 
+            r.get("score_ofensivo") or 
+            r.get("score_ofensa_explicita") or
+            r.get("score_semantica") or
+            r.get("score_toxidade") or
+            r.get("score_ml_sentimento") or
+            r.get("score")
+        )
+        
         payload = {
             "id_avaliacao": row['id_avaliacao'],
+            "id_pergunta": row['id_pergunta'],
+            "id_resposta": row['id_resposta'],
             "contexto_pergunta": row['texto_pergunta'],
             "conteudo_resposta": row['conteudo_resposta'],
-            "metodo_detectado": r['metodo_detectado'],
-            "tipo_suspeita": r['tipo_suspeita'],
-            "score": r['score'],
+            "metodo_detectado": r.get('metodo_detectado'),
+            "tipo_suspeita": r.get('tipo_suspeita'),
+            "score": score,
             "analisada_por_ml": 1,
             "eh_ofensiva": True,
-            "sentimento_previsto": r['sentimento_previsto']
+            "sentimento_previsto": r.get('sentimento_previsto')
         }
         response = requests.post(url, json=payload)
         if response.status_code == 201:
@@ -42,22 +54,35 @@ def inserir_frase_suspeita(row, resultado):
 def inserir_frase_analisada(row, resultado):
     url = f"{API_SADO_ML_URL}/salvar_analise"
     for r in resultado:
+        score = (
+            r.get("score_critica") or 
+            r.get("score_ofensivo") or 
+            r.get("score_ofensa_explicita") or
+            r.get("score_semantica") or
+            r.get("score_toxidade") or
+            r.get("score_ml_sentimento") or
+            r.get("score")
+        )
+        
         payload = {
             "id": row.get('id', 0),
             "id_avaliacao": row['id_avaliacao'],
+            "id_pergunta": row['id_pergunta'],
+            "id_resposta": row['id_resposta'],
             "contexto_pergunta": row['texto_pergunta'],
             "conteudo_resposta": row['conteudo_resposta'],
-            "modelo_utilizado": r['metodo_detectado'],
-            "sentimento_classificado": r['sentimento_previsto'],
-            "ofensiva": int(r['eh_ofensiva']),
-            "motivo_ofensivo": r['tipo_suspeita'],
-            "score": r['score']
+            "modelo_utilizado": r.get('metodo_detectado'),
+            "sentimento_classificado": r.get('sentimento_previsto'),
+            "ofensiva": int(r.get('eh_ofensiva', 0)),
+            "motivo_ofensivo": r.get('tipo_suspeita'),
+            "score": score
         }
         response = requests.post(url, json=payload)
         if response.status_code == 201:
             print("✅ Frase registrada em Frases_Analisadas")
         else:
             print("❌ Erro ao inserir em Frases_Analisadas:", response.text)
+
 
 def processar_respostas():
     df = buscar_respostas_abertas()
