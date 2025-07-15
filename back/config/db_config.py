@@ -1,6 +1,6 @@
 # back/config/db_config.py
 
-MODO_DESENVOLVIMENTO = "BD"  # ou "BD"
+MODO_DESENVOLVIMENTO = "CSV"  # ou "BD"
 
 db_params = {
     "server": "localhost\\SQLEXPRESS",
