@@ -1,14 +1,97 @@
-id_resposta;conteudo_resposta;data_hr_registro;idAvaliacao;id_pergunta
-1;Concordo totalmente;2025-07-08 09:43:34;1;1
-2;Neutro;2025-07-08 09:43:36;1;2
-3;Concordo totalmente;2025-07-08 09:43:38;1;3
-4;Concordo totalmente;2025-07-08 09:43:40;1;4
-5;Neutro;2025-07-08 09:43:42;1;5
-6;Concordo totalmente;2025-07-08 09:43:44;1;6
-7;Concordo totalmente;2025-07-08 09:43:46;1;7
-8;Neutro;2025-07-08 09:43:48;1;8
-9;Concordo;2025-07-08 09:43:51;1;9
-10;Concordo totalmente;2025-07-08 09:43:53;1;10
-11;Concordo;2025-07-08 09:43:55;1;11
-12;Concordo totalmente;2025-07-08 09:43:57;1;12
-13;Teste inserção de dados na Tabela Respostas;2025-07-08 09:43:59;1;16
+﻿id_resposta;conteudo_resposta;data_hr_registro;idAvaliacao;id_pergunta
+1;Concordo totalmente;2025-07-10 15:24:27.687;2;4
+2;Concordo;2025-07-10 15:24:29.730;2;5
+3;Concordo;2025-07-10 15:24:31.777;2;6
+4;Concordo totalmente;2025-07-10 15:24:33.823;2;7
+5;Concordo;2025-07-10 15:24:35.867;2;8
+6;Concordo;2025-07-10 15:24:37.897;2;11
+7;Concordo totalmente;2025-07-10 15:24:39.950;2;12
+8;Concordo totalmente;2025-07-10 15:24:42.007;2;13
+9;Concordo totalmente;2025-07-10 15:24:44.047;2;19
+10;Concordo;2025-07-10 15:24:46.093;2;20
+11;Concordo;2025-07-10 15:24:48.127;2;21
+12;O professor é muito atencioso, a sua metodologia me ajudou muito a entender a cadeira dele.;2025-07-10 15:24:50.193;2;22
+13;Concordo totalmente;2025-07-10 15:25:59.063;2;4
+14;Concordo;2025-07-10 15:26:01.107;2;5
+15;Concordo;2025-07-10 15:26:03.153;2;6
+16;Concordo totalmente;2025-07-10 15:26:05.207;2;7
+17;Concordo;2025-07-10 15:26:07.243;2;8
+18;Concordo;2025-07-10 15:26:09.297;2;11
+19;Concordo totalmente;2025-07-10 15:26:11.337;2;12
+20;Concordo totalmente;2025-07-10 15:26:13.393;2;13
+21;Concordo totalmente;2025-07-10 15:26:15.437;2;19
+22;Concordo;2025-07-10 15:26:17.473;2;20
+23;Concordo;2025-07-10 15:26:19.523;2;21
+24;A metodologia do professor foi ótima para o meu aprendizado.;2025-07-10 15:26:21.580;2;22
+25;Neutro;2025-07-10 15:27:37.067;2;4
+26;Concordo totalmente;2025-07-10 15:27:39.117;2;5
+27;Discordo;2025-07-10 15:27:41.163;2;6
+28;Concordo totalmente;2025-07-10 15:27:43.210;2;7
+29;Discordo totalmente;2025-07-10 15:27:45.263;2;8
+30;Concordo totalmente;2025-07-10 15:27:47.307;2;11
+31;Concordo totalmente;2025-07-10 15:27:49.350;2;12
+32;Neutro;2025-07-10 15:27:51.380;2;13
+33;Discordo totalmente;2025-07-10 15:27:53.433;2;19
+34;Concordo totalmente;2025-07-10 15:27:55.483;2;20
+35;Discordo;2025-07-10 15:27:57.537;2;21
+36;O modo de ensino do Professor as vezes foram muito rapidas para mim. Não consegui acompanhar direito.;2025-07-10 15:27:59.587;2;22
+37;Concordo totalmente;2025-07-11 10:49:34.190;2;4
+38;Concordo;2025-07-11 10:49:36.310;2;5
+39;Concordo totalmente;2025-07-11 10:49:38.343;2;6
+40;Concordo totalmente;2025-07-11 10:49:40.377;2;7
+41;Concordo totalmente;2025-07-11 10:49:42.413;2;8
+42;Discordo;2025-07-11 10:49:44.443;2;11
+43;Concordo totalmente;2025-07-11 10:49:46.490;2;12
+44;Concordo totalmente;2025-07-11 10:49:48.527;2;13
+45;Concordo;2025-07-11 10:49:50.560;2;19
+46;Concordo totalmente;2025-07-11 10:49:52.587;2;20
+47;Neutro;2025-07-11 10:49:54.610;2;21
+48;A metodologia do professor é muito parecida com a vida real de um trabalhador na área de tecnologia, com prazos, alternância de datas, imprevisibilidade das cobranças. Por um lado foi bom para aprender a adaptabilidade e por outro é bastante estressante.;2025-07-11 10:49:56.657;2;22
+49;Concordo totalmente;2025-07-11 16:43:32.787;2;4
+50;Concordo;2025-07-11 16:43:34.883;2;5
+51;Concordo totalmente;2025-07-11 16:43:36.917;2;6
+52;Concordo totalmente;2025-07-11 16:43:38.947;2;7
+53;Concordo totalmente;2025-07-11 16:43:40.980;2;8
+54;Discordo totalmente;2025-07-11 16:43:43.013;2;11
+55;Neutro;2025-07-11 16:43:45.057;2;12
+56;Concordo totalmente;2025-07-11 16:43:47.100;2;13
+57;Concordo totalmente;2025-07-11 16:43:49.130;2;19
+58;Concordo totalmente;2025-07-11 16:43:51.163;2;20
+59;Neutro;2025-07-11 16:43:53.193;2;21
+60;Ela tem uma forma de ensino que é muito boa, porém ela demora muito tempo para corrigir as provas, tivemos que fazer duas provas de recuperação no mesmo dia, tanto da primeira unidade quanto da segunda unidade. Foi muito exaustivo.;2025-07-11 16:43:55.240;2;22
+61;Neutro;2025-07-11 17:17:55.920;2;4
+62;Discordo;2025-07-11 17:17:57.990;2;5
+63;Discordo;2025-07-11 17:18:00.043;2;6
+64;Neutro;2025-07-11 17:18:02.093;2;7
+65;Neutro;2025-07-11 17:18:04.137;2;8
+66;Concordo;2025-07-11 17:18:06.177;2;11
+67;Concordo;2025-07-11 17:18:08.237;2;12
+68;Concordo;2025-07-11 17:18:10.310;2;13
+69;Concordo;2025-07-11 17:18:12.360;2;19
+70;Concordo;2025-07-11 17:18:14.407;2;20
+71;Discordo totalmente;2025-07-11 17:18:16.453;2;21
+72;As aulas são um pouco devagar, pois o professor fica só na plataforma CISCO sem nada de prática, fica um pouco entediante.;2025-07-11 17:18:18.503;2;22
+73;Concordo totalmente;2025-07-11 17:29:13.380;2;4
+74;Concordo totalmente;2025-07-11 17:29:15.433;2;5
+75;Concordo totalmente;2025-07-11 17:29:17.473;2;6
+76;Concordo totalmente;2025-07-11 17:29:19.537;2;7
+77;Concordo totalmente;2025-07-11 17:29:21.577;2;8
+78;Concordo totalmente;2025-07-11 17:29:23.627;2;11
+79;Concordo totalmente;2025-07-11 17:29:25.690;2;12
+80;Concordo totalmente;2025-07-11 17:29:27.727;2;13
+81;Concordo totalmente;2025-07-11 17:29:29.793;2;19
+82;Concordo totalmente;2025-07-11 17:29:31.830;2;20
+83;Concordo totalmente;2025-07-11 17:29:33.887;2;21
+84;Gostei muito da metodologia aplicada pelo professor, pois ele foi muito eficiente em ensinar aos alunos mesmo em níveis diferente de inglês.;2025-07-11 17:29:35.947;2;22
+85;Concordo totalmente;2025-07-11 17:45:06.407;1;1
+86;Concordo;2025-07-11 17:45:08.463;1;2
+87;Concordo totalmente;2025-07-11 17:45:10.497;1;3
+88;Neutro;2025-07-11 17:45:12.550;1;4
+89;Concordo;2025-07-11 17:45:14.587;1;5
+90;Concordo totalmente;2025-07-11 17:45:16.633;1;6
+91;Concordo totalmente;2025-07-11 17:45:18.673;1;7
+92;Neutro;2025-07-11 17:45:20.707;1;8
+93;Concordo totalmente;2025-07-11 17:45:22.753;1;9
+94;Concordo totalmente;2025-07-11 17:45:26.910;1;17
+95;Concordo totalmente;2025-07-11 17:45:28.943;1;18
+96;Acredito que talvez seria melhor deixar todos os computadores do laboratório prontos e com as aplicações necessárias para fazer consultas SQL. Isso atrapalhou muito as aulas praticas, pois eu mesmo não gostei que ele usou o ORACLE online, porque eu e muita gente também não conseguiu acessar para fazer consultas e treinar em sala de aulas o que estava sendo ensinado. Esse foi o único ponto negativo nas aulas praticas.;2025-07-11 17:58:15.663;1;16

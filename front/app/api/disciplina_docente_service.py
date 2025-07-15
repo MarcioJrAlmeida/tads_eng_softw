@@ -72,8 +72,22 @@ def listar_docentes():
 def listar_disciplinas_docente():
     try:
         if MODO_DESENVOLVIMENTO == "CSV":
-            df = pd.read_csv(get_csv_path("Disciplina_Docente.csv"), sep=';', dtype=str)
-            return jsonify(df.to_dict(orient='records'))
+            df_dd = pd.read_csv(get_csv_path("Disciplina_Docente.csv"), sep=';', dtype=str)[["id_disciplina_docente"]]
+            df_prof = pd.read_csv(get_csv_path("Professor.csv"), sep=';', dtype=str)[["idDisciplina_Docente", "nome_docente"]]
+            df_disc = pd.read_csv(get_csv_path("Disciplina.csv"), sep=';', dtype=str)[["idDisciplina_Docente", "nome_disciplina"]]
+
+            # JOIN Disciplina_Docente -> Professor
+            df = df_dd.merge(df_prof, left_on="id_disciplina_docente", right_on="idDisciplina_Docente", how="left")
+
+            # JOIN com Disciplina
+            df = df.merge(df_disc, left_on="idDisciplina_Docente", right_on="idDisciplina_Docente", how="left")
+
+            # Seleciona e renomeia
+            df_resultado = df[["id_disciplina_docente", "nome_docente", "nome_disciplina"]].fillna("")
+            
+            df_resultado["id_disciplina_docente"] = df_resultado["id_disciplina_docente"].astype(int)
+
+            return jsonify(df_resultado.to_dict(orient='records'))
         else:
             conn = get_connection()
             cursor = conn.cursor()
@@ -98,13 +112,10 @@ def listar_disciplinas_docente():
 @disciplina_api.route('/docentes_avaliados', methods=['GET'])
 def docentes_avaliados():
     try:
-        id_avaliacao = request.args.get('id_avaliacao', type=str)
+        id_avaliacao = str(request.args.get('id_avaliacao', "")).strip()
 
-        if not id_avaliacao or id_avaliacao.strip() == "":
-            return jsonify({"erro": "Parâmetro 'id_avaliacao' não fornecido ou vazio."}), 400
-
-        # Modo CSV
         if MODO_DESENVOLVIMENTO == "CSV":
+            id_avaliacao = "1" 
             resposta_df = pd.read_csv(get_csv_path("Resposta.csv"), sep=";", dtype=str)
             possui_df = pd.read_csv(get_csv_path("Possui.csv"), sep=";", dtype=str)
 
@@ -144,35 +155,63 @@ def docentes_avaliados():
 @disciplina_api.route('/docentes_nao_avaliados', methods=['GET'])
 def docentes_nao_avaliados():
     try:
-        id_avaliacao = request.args.get('id_avaliacao', type=str)
-        if not id_avaliacao or id_avaliacao.strip() == "":
-            return jsonify({"erro": "Parâmetro 'id_avaliacao' não fornecido ou vazio."}), 400
+        id_avaliacao = str(request.args.get('id_avaliacao', "")).strip()
 
-        conn = get_connection()
-        cursor = conn.cursor()
+        if MODO_DESENVOLVIMENTO == "CSV":
+            id_avaliacao = "1"  # Força para '1' no modo CSV
 
-        # Busca todos os docentes da avaliação
-        cursor.execute("""
-            SELECT DISTINCT dd.id_disciplina_docente
-            FROM Avaliacao a
-            JOIN Contem c ON a.id_avaliacao = c.id_avaliacao
-            JOIN Pergunta p ON c.id_pergunta = p.id_pergunta
-            JOIN Disciplina_Docente dd ON 1=1
-            WHERE a.id_avaliacao = ?
-        """, (id_avaliacao,))
-        todos = {int(r[0]) for r in cursor.fetchall()}
+            # Carregar os dados necessários
+            df_avaliacao = pd.read_csv(get_csv_path("Avaliacao.csv"), sep=";", dtype=str)[["id_avaliacao"]]
+            df_contem = pd.read_csv(get_csv_path("Contem.csv"), sep=";", dtype=str)[["id_avaliacao", "id_pergunta"]]
+            df_pergunta = pd.read_csv(get_csv_path("Pergunta.csv"), sep=";", dtype=str)[["id_pergunta"]]
+            df_disciplina_docente = pd.read_csv(get_csv_path("Disciplina_Docente.csv"), sep=";", dtype=str)[["id_disciplina_docente"]]
+            df_possui = pd.read_csv(get_csv_path("Possui.csv"), sep=";", dtype=str)[["id_resposta", "id_disciplina_docente"]]
+            df_resposta = pd.read_csv(get_csv_path("Resposta.csv"), sep=";", dtype=str)[["id_resposta", "idAvaliacao"]]
 
-        # Busca os que já foram avaliados
-        cursor.execute("""
-            SELECT DISTINCT p.id_disciplina_docente
-            FROM Possui AS p
-            INNER JOIN Resposta AS r ON p.id_resposta = r.id_resposta
-            WHERE r.idAvaliacao = ?
-        """, (id_avaliacao,))
-        avaliados = {int(r[0]) for r in cursor.fetchall()}
+            # Buscar todos os docentes da avaliação
+            contem_filtrado = df_contem[df_contem["id_avaliacao"] == id_avaliacao]
+            if contem_filtrado.empty:
+                return jsonify([]), 200
 
-        nao_avaliados = list(todos - avaliados)
-        return jsonify(nao_avaliados), 200
+            todos = set(df_disciplina_docente["id_disciplina_docente"].astype(int))
+
+            # Buscar os docentes que já foram avaliados
+            respostas_filtradas = df_resposta[df_resposta["idAvaliacao"] == id_avaliacao]
+            if not respostas_filtradas.empty:
+                df_possui_merge = df_possui.merge(respostas_filtradas, on="id_resposta", how="inner")
+                avaliados = set(df_possui_merge["id_disciplina_docente"].astype(int))
+            else:
+                avaliados = set()
+
+            # Diferença entre conjuntos
+            nao_avaliados = list(todos - avaliados)
+
+            return jsonify(nao_avaliados), 200
+
+        else:
+            conn = get_connection()
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                SELECT DISTINCT dd.id_disciplina_docente
+                FROM Avaliacao a
+                JOIN Contem c ON a.id_avaliacao = c.id_avaliacao
+                JOIN Pergunta p ON c.id_pergunta = p.id_pergunta
+                JOIN Disciplina_Docente dd ON 1=1
+                WHERE a.id_avaliacao = ?
+            """, (id_avaliacao,))
+            todos = {int(r[0]) for r in cursor.fetchall()}
+
+            cursor.execute("""
+                SELECT DISTINCT p.id_disciplina_docente
+                FROM Possui AS p
+                INNER JOIN Resposta AS r ON p.id_resposta = r.id_resposta
+                WHERE r.idAvaliacao = ?
+            """, (id_avaliacao,))
+            avaliados = {int(r[0]) for r in cursor.fetchall()}
+
+            nao_avaliados = list(todos - avaliados)
+            return jsonify(nao_avaliados), 200
 
     except Exception as e:
         return jsonify({"erro": str(e)}), 500

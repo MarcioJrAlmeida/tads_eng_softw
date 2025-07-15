@@ -1,4 +1,4 @@
-id_pergunta;texto_pergunta;tipo_pergunta;data_hr_registro
+﻿id_pergunta;texto_pergunta;tipo_pergunta;data_hr_registro
 1;O professor demonstra domínio profundo sobre os temas abordados?;Fechada;2025-06-21 17:30:33.133
 2;As aulas seguem um plano coerente com os objetivos da disciplina?;Fechada;2025-06-21 17:30:33.133
 3;O professor relaciona o conteúdo com situações práticas ou atuais?;Fechada;2025-06-21 17:30:33.133
@@ -19,6 +19,5 @@ id_pergunta;texto_pergunta;tipo_pergunta;data_hr_registro
 18;O professor forneceu atividades para exercitar o conteúdo abordado?;Fechada;2025-06-27 11:18:35.330
 19;O professor teve postura adequada diante da diversidade sociocultural?;Fechada;2025-06-27 11:23:24.913
 20;A relação professor aluno foi boa e favoreceu o processo de ensino-aprendizagem?;Fechada;2025-06-27 18:25:19.450
-21;O professor se mostrou disponível para o atendimento aos/as estudantes fora do horário de aula?;Fechada;2025-06-27 18:31:38.363
-23;Qual foi sua maior dificuldade?;Aberta;2025-07-07 15:09:04
-24;Qual foi sua maior dificuldade?;Fechada;2025-07-07 15:09:23
+21;Mostrou-se disponível para o atendimento aos/as estudantes fora do horário de aula?;Fechada;2025-06-27 18:31:38.363
+22;Qual a sua opinião sobre a metodologia de aula do Professor?;Aberta;2025-07-10 09:21:09.417

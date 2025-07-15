@@ -1,4 +1,3 @@
-id_avaliacao;periodo;data_hr_registro;idDiretor;modelo_avaliacao
-1;202501;2025-06-29 11:10:15;1;"{""ordem_perguntas"": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16, 13, 14, 15, 17, 18, 19, 20, 21], ""qtd_perguntas_exibir"": 13}"
-2;202402;2025-07-07 10:42:34;1;"{""ordem_perguntas"": [2, 1, 5, 4, 6, 7, 8, 9, 10, 14, 15, 16], ""qtd_perguntas_exibir"": 12}"
-3;202401;2025-07-10 15:44:45;1;"{""ordem_perguntas"": [5, 6, 7, 9, 16], ""qtd_perguntas_exibir"": 5}"
+﻿id_avaliacao;periodo;data_hr_registro;idDiretor;modelo_avaliacao;status_avaliacao;data_lancamento
+1;202501;2025-06-28 14:42:43.903;1;"{""ordem_perguntas"": [1, 2, 3, 4, 5, 6, 7, 8, 9, 18, 17, 16], ""qtd_perguntas_exibir"": 12}";Ativo;2025-07-11 17:41:27.113
+2;202402;2025-07-10 15:18:31.067;1;"{""ordem_perguntas"": [4, 5, 6, 7, 8, 12, 11, 13, 20, 21, 19, 22], ""qtd_perguntas_exibir"": 12}";Inativo;2025-07-11 17:40:16.327
