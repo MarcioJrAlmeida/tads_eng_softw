@@ -223,6 +223,7 @@ def atualizar_status_avaliacao(id_avaliacao):
             caminho_csv = get_csv_path("Avaliacao.csv")
             df = pd.read_csv(caminho_csv, sep=";", dtype=str)
 
+            df["id_avaliacao"] = df["id_avaliacao"].astype(str)
             if str(id_avaliacao) not in df["id_avaliacao"].values:
                 return jsonify({"erro": "Avaliação não encontrada."}), 404
 
@@ -239,22 +240,29 @@ def atualizar_status_avaliacao(id_avaliacao):
             return jsonify({"mensagem": f"Avaliação {id_avaliacao} atualizada para {novo_status} (CSV)."}), 200
 
         else:
-            conn = get_connection()
-            cursor = conn.cursor()
+            try:
+                conn = get_connection()
+                cursor = conn.cursor()
+                dt_lancamento = datetime.now()
 
-            # Define todas como Inativo
-            cursor.execute("UPDATE Avaliacao SET status_avaliacao = 'Inativo'")
+                # Define todas como Inativo
+                cursor.execute("UPDATE Avaliacao SET status_avaliacao = 'Inativo'")
 
-            # Atualiza a específica
-            cursor.execute("""
-                UPDATE Avaliacao 
-                SET status_avaliacao = ?, data_lancamento = ? 
-                WHERE id_avaliacao = ?
-            """, (novo_status, dt_lancamento, id_avaliacao))
+                # Atualiza a específica
+                cursor.execute("""
+                    UPDATE Avaliacao 
+                    SET status_avaliacao = ?, data_lancamento = ? 
+                    WHERE id_avaliacao = ?
+                """, (novo_status, dt_lancamento, id_avaliacao))
 
-            conn.commit()
+                conn.commit()
 
-            return jsonify({"mensagem": f"Avaliação {id_avaliacao} atualizada para {novo_status}."}), 200
+                return jsonify({"mensagem": f"Avaliação {id_avaliacao} atualizada para {novo_status}."}), 200
+        
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                return jsonify({"erro": str(e)}), 500
 
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
@@ -322,6 +330,89 @@ def vincular_perguntas(id_avaliacao):
                 """, (id_avaliacao, id_pergunta))
 
             # Inserir novas perguntas
+            for id_pergunta in perguntas_a_inserir:
+                cursor.execute("""
+                    INSERT INTO Contem (id_avaliacao, id_pergunta) 
+                    VALUES (?, ?)
+                """, (id_avaliacao, id_pergunta))
+
+            conn.commit()
+
+            return jsonify({
+                "mensagem": f"Perguntas atualizadas para a avaliação {id_avaliacao}.",
+                "inseridas": perguntas_a_inserir,
+                "removidas": perguntas_a_remover
+            }), 200
+
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+
+@avaliacoes_api.route('/avaliacoes/<int:id_avaliacao>/criar_vinculo_perguntas', methods=['POST'])
+def vincular_pergunta_a_avaliacao_nova(id_avaliacao):
+    try:
+        dados = request.json
+        lista_perguntas = dados.get("id_perguntas", [])
+
+        if not lista_perguntas or not isinstance(lista_perguntas, list):
+            return jsonify({"erro": "Lista de perguntas vazia ou inválida."}), 400
+
+        # Normaliza os IDs
+        lista_perguntas = [int(p) for p in lista_perguntas]
+
+        if MODO_DESENVOLVIMENTO == "CSV":
+            caminho_csv = get_csv_path("Contem.csv")
+            df_contem = pd.read_csv(caminho_csv, sep=";", dtype=str)
+
+            perguntas_existentes = df_contem[df_contem["id_avaliacao"] == str(id_avaliacao)]["id_pergunta"].astype(int).tolist()
+
+            perguntas_a_inserir = list(set(lista_perguntas) - set(perguntas_existentes))
+            perguntas_a_remover = list(set(perguntas_existentes) - set(lista_perguntas))
+
+            # Remove as que foram desmarcadas
+            df_contem = df_contem[~(
+                (df_contem["id_avaliacao"] == str(id_avaliacao)) &
+                (df_contem["id_pergunta"].astype(int).isin(perguntas_a_remover))
+            )]
+
+            # Adiciona as novas
+            novos_registros = pd.DataFrame([{
+                "id_avaliacao": str(id_avaliacao),
+                "id_pergunta": str(idp)
+            } for idp in perguntas_a_inserir])
+
+            df_contem = pd.concat([df_contem, novos_registros], ignore_index=True)
+            df_contem.to_csv(caminho_csv, sep=";", index=False)
+
+            return jsonify({
+                "mensagem": f"Perguntas atualizadas para a avaliação {id_avaliacao}. (CSV)",
+                "inseridas": perguntas_a_inserir,
+                "removidas": perguntas_a_remover
+            }), 200
+
+        else:
+            conn = get_connection()
+            cursor = conn.cursor()
+
+            # (Opcional) Verifica se a avaliação existe antes
+            cursor.execute("SELECT 1 FROM Avaliacao WHERE id_avaliacao = ?", (id_avaliacao,))
+            if cursor.fetchone() is None:
+                return jsonify({"erro": f"Avaliação com id {id_avaliacao} não encontrada."}), 404
+
+            # Busca as perguntas já vinculadas
+            cursor.execute("SELECT id_pergunta FROM Contem WHERE id_avaliacao = ?", (id_avaliacao,))
+            perguntas_existentes = [int(row.id_pergunta) for row in cursor.fetchall()]
+
+            perguntas_a_inserir = list(set(lista_perguntas) - set(perguntas_existentes))
+            perguntas_a_remover = list(set(perguntas_existentes) - set(lista_perguntas))
+
+            # Remoção
+            for id_pergunta in perguntas_a_remover:
+                cursor.execute("""
+                    DELETE FROM Contem 
+                    WHERE id_avaliacao = ? AND id_pergunta = ?
+                """, (id_avaliacao, id_pergunta))
+
+            # Inserção
             for id_pergunta in perguntas_a_inserir:
                 cursor.execute("""
                     INSERT INTO Contem (id_avaliacao, id_pergunta) 
