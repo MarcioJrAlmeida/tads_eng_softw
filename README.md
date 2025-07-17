@@ -66,7 +66,8 @@ python run_app.py
 ```
 
 Acesse `http://localhost:8501` no navegador para ver a aplicação.
-
+Login: diretor
+Password: diretor123
 ---
 
 ## 🤖 Executar módulo de NLP/LLM
